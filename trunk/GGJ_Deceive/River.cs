@@ -16,7 +16,7 @@ namespace GGJ_Deceive
         short[] indicies = null;
 
 
-        public void Draw(Effect sceneEffect, Matrix transform, int texture)
+        public void Draw(Effect sceneEffect, Matrix transform, int texture, bool underwater)
         {
             sceneEffect.Parameters["TreeTexture"].SetValue(texture == 0 ? texture_a : texture == 1 ? texture_b : texture_c);
             sceneEffect.Parameters["World"].SetValue(transform);
@@ -25,6 +25,7 @@ namespace GGJ_Deceive
             Game1.GraphicsDevice.RenderState.AlphaFunction = CompareFunction.Greater;
 
             Game1.GraphicsDevice.RenderState.ReferenceAlpha = 122;
+            sceneEffect.Parameters["doFog"].SetValue(underwater);
             sceneEffect.CurrentTechnique = sceneEffect.Techniques["Technique3"];
 
             sceneEffect.Begin();
@@ -71,12 +72,13 @@ namespace GGJ_Deceive
         public const float BOTTOM_WIDTH = 2;
         public const float TOP_WIDTH = 4;
         public const float BOUNDARY_BUFFER = 0.1f;
-        static float RiverSpeed = 0.01f;
+        static float RiverSpeed = 0.015f;
         static float RiverOffset = 0f;
         List<Matrix> treeInstances = new List<Matrix>();
-        const int tree_count = 10;
+        const int tree_count = 100;
         Tree riverTree;
         Texture2D riverfloor;
+        Texture2D background;
         Texture2D riverwater;
 
         VertexPositionNormalTexture[] water_vertices = null;
@@ -94,7 +96,7 @@ namespace GGJ_Deceive
         {
             float side_pos = (float)((new Random().NextDouble() > 0.5) ?
             new Random().NextDouble() + 3 : -new Random().NextDouble() - 3);
-            return new Vector3(side_pos, (float)(new Random().NextDouble() - 0.5) * 2f, 0);
+            return new Vector3(side_pos, (float)(new Random().NextDouble() - 2.5) * 2f, -20);
         }
 
         public void Update()
@@ -125,10 +127,12 @@ namespace GGJ_Deceive
 
         public void DrawRefracted()
         {
+            effect.Parameters["fogcolor"].SetValue(Game1.fog);
             effect.Parameters["World"].SetValue(Matrix.Identity);
             effect.Parameters["View"].SetValue(Game1.View);
             effect.Parameters["Projection"].SetValue(Game1.Projection);
-
+            effect.Parameters["TreeTexture"].SetValue(background);
+            
             effect.CurrentTechnique = effect.Techniques["Technique4"];
             effect.Begin();
 
@@ -165,16 +169,12 @@ namespace GGJ_Deceive
 
             int i = 0;
             foreach (Matrix t in treeInstances)
-                riverTree.Draw(effect, t, i++ % 5);
+                riverTree.Draw(effect, t, i++ % 5, false);
 
         }
 
         public void Draw()
         {
-            
-
-            
-            //NOW DRAW WATER
 
             effect.Parameters["World"].SetValue(Matrix.Identity);
             effect.Parameters["SceneTexture"].SetValue(Game1.refractBuffer.GetTexture());
@@ -222,10 +222,10 @@ namespace GGJ_Deceive
             //draw trees again becase they pass thru the water
             int i = 0;
             foreach (Matrix t in treeInstances)
-                riverTree.Draw(effect, t, i++ % 5);
+                riverTree.Draw(effect, t, i++ % 5, true);
 
             Game1.GraphicsDevice.RenderState.DepthBufferWriteEnable = true;
-           // Game1.GraphicsDevice.DepthStencilBuffer = old;
+           
         }
 
         public float LeftSideBump(float pos)
@@ -238,9 +238,12 @@ namespace GGJ_Deceive
         }
         public float BottomSideBump(float pos)
         {
-            return 0.125f * ((float)Math.Cos((double)pos*2) + (float)Math.Sin((double)pos * .5));
+            return 0.25f * ((float)Math.Cos((double)pos*2) + (float)Math.Sin((double)pos * .5));
         }
-
+        public Vector3 getNormal(Vector3 pos)
+        {
+            return Vector3.Normalize(new Vector3(pos.X, pos.Y, 0));
+        }
         public void CreateSegement(int index)
         {
             float offset = (RiverOffset % segments);
@@ -259,49 +262,70 @@ namespace GGJ_Deceive
             float next_idx = MathHelper.Pi * 2f * (float)((index / segement_vertex_count)) / (float)segments;
 
             //Left bank
-            river_vertices[0 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-TOP_WIDTH / 2 + LeftSideBump(prev_idx), 0 + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0, 0));
-            river_vertices[1 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-TOP_WIDTH / 2 + LeftSideBump(next_idx), 0 + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0, 1));
-            river_vertices[2 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(next_idx), -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.33f, 1));
+            river_vertices[0 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-TOP_WIDTH / 2 + LeftSideBump(prev_idx), 
+                0 + BottomSideBump(prev_idx), 
+                prev_step + RightSideBump(prev_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0, 0));
+            river_vertices[1 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-TOP_WIDTH / 2 + LeftSideBump(next_idx),
+                0 + BottomSideBump(next_idx), 
+                next_step + RightSideBump(next_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0, 1));
+            river_vertices[2 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(next_idx),
+                -side_depth + BottomSideBump(next_idx * 2),
+                next_step + RightSideBump(next_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(.33f, 1));
 
-            river_vertices[3 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-TOP_WIDTH / 2 + LeftSideBump(prev_idx), 0 + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0, 0));
-            river_vertices[4 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(next_idx), -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.33f, 1));
-            river_vertices[5 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx), -side_depth + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.33f, 0));
+            river_vertices[3 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-TOP_WIDTH / 2 + LeftSideBump(prev_idx),
+                0 + BottomSideBump(prev_idx), 
+                prev_step + RightSideBump(prev_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0, 0));
+            river_vertices[4 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(next_idx),
+                -side_depth + BottomSideBump(next_idx * 2),
+                next_step + RightSideBump(next_idx)),
+               Vector3.Zero, new Microsoft.Xna.Framework.Vector2(.33f, 1));
+            river_vertices[5 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx),
+                -side_depth + BottomSideBump(prev_idx * 2), 
+                prev_step + RightSideBump(prev_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(.33f, 0));
 
             //Bottom
-            river_vertices[6 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx), -side_depth + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0.33f, 0));
-            river_vertices[7 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(next_idx), -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0.33f, 1));
-            river_vertices[8 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(next_idx), -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.66f, 1));
+            river_vertices[6 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx),
+                -side_depth + BottomSideBump(prev_idx * 2), prev_step + RightSideBump(prev_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0.33f, 0));
+            river_vertices[7 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(next_idx),
+                -side_depth + BottomSideBump(next_idx * 2), next_step + RightSideBump(next_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0.33f, 1));
+            river_vertices[8 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(next_idx),
+                -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(.66f, 1));
 
-            river_vertices[9 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx), -side_depth + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0.33f, 0));
-            river_vertices[10 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(next_idx), -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.66f, 1));
-            river_vertices[11 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx), -side_depth + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.66f, 0));
+            river_vertices[9 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(-BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx),
+                -side_depth + BottomSideBump(prev_idx * 2), prev_step + RightSideBump(prev_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0.33f, 0));
+            river_vertices[10 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(next_idx),
+                -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
+               Vector3.Zero, new Microsoft.Xna.Framework.Vector2(.66f, 1));
+            river_vertices[11 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx),
+                -side_depth + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(.66f, 0));
 
             //Right bank
             river_vertices[12 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx), -side_depth + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0.33f, 0));
+              Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0.66f, 0));
             river_vertices[13 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(next_idx), -side_depth + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0.33f, 1));
+               Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0.66f, 1));
             river_vertices[14 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(TOP_WIDTH / 2 + LeftSideBump(next_idx), 0 + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.66f, 1));
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(1f, 1));
 
             river_vertices[15 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(BOTTOM_WIDTH / 2 +LeftSideBump(prev_idx), -side_depth + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(0.33f, 0));
+                Vector3.Zero, new Microsoft.Xna.Framework.Vector2(0.66f, 0));
             river_vertices[16 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(TOP_WIDTH / 2 + LeftSideBump(next_idx), 0 + BottomSideBump(next_idx), next_step + RightSideBump(next_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.66f, 1));
+              Vector3.Zero, new Microsoft.Xna.Framework.Vector2(1f, 1));
             river_vertices[17 + index] = new VertexPositionNormalTexture(new Microsoft.Xna.Framework.Vector3(TOP_WIDTH / 2 + LeftSideBump(prev_idx), 0 + BottomSideBump(prev_idx), prev_step + RightSideBump(prev_idx)),
-                new Microsoft.Xna.Framework.Vector3(0, 1, 0), new Microsoft.Xna.Framework.Vector2(.66f, 0));
+              Vector3.Zero, new Microsoft.Xna.Framework.Vector2(1f, 0));
+
+            for (int z = index; z < index + 18; z++)
+                river_vertices[z].Normal = getNormal(river_vertices[z].Position);
         }
 
         public void Create()
@@ -311,12 +335,14 @@ namespace GGJ_Deceive
 
             for (int i = 0; i < tree_count; i++)
             {
-                Matrix t = Matrix.CreateTranslation(new Vector3((float)(new Random().Next() - 0.5f * 3.0f), 0, 10 * (float)i / (float)tree_count));
+                Matrix t = Matrix.CreateTranslation(new Vector3((float)(new Random().Next() - 0.5f * 3.0f), 
+                    0, 10 -i));
                 treeInstances.Add(t);
             }
 
             riverwater = Game1.GetInstance.Content.Load<Texture2D>("Water");
             riverfloor = Game1.GetInstance.Content.Load<Texture2D>("Riverfloor");
+            background = Game1.GetInstance.Content.Load<Texture2D>("background");
             effect = Game1.GetInstance.Content.Load<Effect>("River");
 
             river_indicies = new short[segement_vertex_count * segments];
@@ -355,10 +381,10 @@ namespace GGJ_Deceive
             background_indicies[5] = 3;
 
             background_vertices = new VertexPositionNormalTexture[4];
-            background_vertices[0] = new VertexPositionNormalTexture(new Vector3(-25, -5, -5), Vector3.Zero, new Vector2(0, 0));
-            background_vertices[1] = new VertexPositionNormalTexture(new Vector3(-25, 15, -5), Vector3.Zero, new Vector2(0, 1));
-            background_vertices[2] = new VertexPositionNormalTexture(new Vector3(25, 15, -5), Vector3.Zero, new Vector2(1, 1));
-            background_vertices[3] = new VertexPositionNormalTexture(new Vector3(25, -5, -5), Vector3.Zero, new Vector2(1, 0));
+            background_vertices[0] = new VertexPositionNormalTexture(new Vector3(-35, -15, -3), Vector3.Zero, new Vector2(0, 1));
+            background_vertices[1] = new VertexPositionNormalTexture(new Vector3(-35, 35, -3), Vector3.Zero, new Vector2(0, 0));
+            background_vertices[2] = new VertexPositionNormalTexture(new Vector3(35, 35, -3), Vector3.Zero, new Vector2(1, 0));
+            background_vertices[3] = new VertexPositionNormalTexture(new Vector3(35, -15, -3), Vector3.Zero, new Vector2(1, 1));
 
         }
 

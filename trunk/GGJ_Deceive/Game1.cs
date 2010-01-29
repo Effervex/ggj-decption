@@ -121,6 +121,8 @@ namespace GGJ_Deceive
             
             base.Update(gameTime);
         }
+        
+        public static Vector4 fog = new Vector4(.73f, .59f, .63f, 1f);
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -128,9 +130,12 @@ namespace GGJ_Deceive
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
             Game1.GraphicsDevice.VertexDeclaration = vd;
-            
+            byte r = 30;
+            byte g = 38;
+            byte b = 36;
+
+            fog = new Vector4(r / 255f, g / 255f, b / 255f, 1f);
             stateMachine.Draw(gameTime);
             base.Draw(gameTime);
         }

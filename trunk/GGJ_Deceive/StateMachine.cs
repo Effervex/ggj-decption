@@ -76,9 +76,9 @@ namespace GGJ_Deceive
             Game1.GraphicsDevice.Clear(Color.SkyBlue);
             
             river_.DrawRefracted();
-
+            
             Game1.GraphicsDevice.SetRenderTarget(0, null);
-            Game1.GraphicsDevice.Clear(new Color((byte)109, (byte)125, (byte)108, 255));
+            Game1.GraphicsDevice.Clear(new Color(Game1.fog));
             
             river_.Draw();
             spawner_.Draw();
