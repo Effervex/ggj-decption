@@ -23,23 +23,41 @@ namespace GGJ_Deceive
 
         public void Update()
         {
+            // Check the player collisions with things
+            foreach (Thing thing in things_)
+            {
+                thing.DoesCollides(Game1.snake);
+            }
+
             Random random = new Random();
-            if (random.NextDouble() < CHANCE_TO_SPAWN * -Game1.Snake.snakeVelocity_.Z)
+            if ((things_.Count < MAX_OBJECTS)
+                && (random.NextDouble() < CHANCE_TO_SPAWN * -Game1.snake.snakeVelocity_))
             {
                 // Spawn a thing
 
                 // Spawn an enemy
                 if (random.NextDouble() < chanceOfEnemy)
                 {
+                    // For now, just use puffer fish. But split the chance between puffer and boat later.
+                    things_.Add(new PufferFish());
                 }
                 else
                 {
                     // Spawn a food fish
+                    things_.Add(new Fish());
                 }
             }
 
             if (chanceOfEnemy < MAX_ENEMY_CHANCE)
                 chanceOfEnemy += INCREASING_CHANCE;
+        }
+
+        public void Draw()
+        {
+            foreach (Thing thing in things_)
+            {
+                thing.Draw();
+            }
         }
     }
 }

@@ -22,12 +22,14 @@ namespace GGJ_Deceive
         SpriteBatch spriteBatch;
 
         //Game Objects
-        public static River River;
-        public static Snake Snake;
+        public static River river;
+        public static Snake snake;
+        public static ThingSpawner thingSpawner;
+        public static StateMachine stateMachine;
         public static Matrix View;
         public static Matrix Projection;
 
-        public static GraphicsDevice GraphicsDevice
+        public static new GraphicsDevice GraphicsDevice
         {
 
             get
@@ -46,12 +48,14 @@ namespace GGJ_Deceive
 
         public Game1()
         {
-
-            River = new River();
-            Snake = new Snake(20);
+            river = new River();
+            snake = new Snake(20);
+            thingSpawner = new ThingSpawner();
+            stateMachine = new StateMachine();
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             instance = this;
+            
         }
 
         /// <summary>
@@ -63,6 +67,7 @@ namespace GGJ_Deceive
         protected override void Initialize()
         {
          //   Game1.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
+            stateMachine.Initialise();
             base.Initialize();
         }
 
@@ -75,8 +80,8 @@ namespace GGJ_Deceive
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            River.Create();
-            Snake.LoadContent(GraphicsDevice);
+            river.Create();
+            snake.LoadContent(GraphicsDevice);
             // TODO: use this.Content to load your game content here
         }
 
@@ -86,7 +91,7 @@ namespace GGJ_Deceive
         /// </summary>
         protected override void UnloadContent()
         {
-            River.Release();
+            river.Release();
             // TODO: Unload any non ContentManager content here
         }
 
@@ -101,8 +106,7 @@ namespace GGJ_Deceive
             Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(70f),
                 graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
                 0.1f, 100f);
-            River.Update();
-            Snake.Update(gameTime, Window.ClientBounds);
+            stateMachine.Update(gameTime, Window.ClientBounds);
             
             base.Update(gameTime);
         }
@@ -114,8 +118,7 @@ namespace GGJ_Deceive
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            River.Draw();
-            Snake.Draw(gameTime);
+            stateMachine.Draw(gameTime);
             base.Draw(gameTime);
         }
     }

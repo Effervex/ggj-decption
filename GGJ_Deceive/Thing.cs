@@ -8,11 +8,13 @@ namespace GGJ_Deceive
 {
     public abstract class Thing
     {
-
         public Vector3 position_;
         public Vector3 velocity_;
-        public Vector3 heading_;
-        private Random random_;
+        protected Random random_;
+
+        public Thing() {
+            Initialise();
+        }
 
         public void Initialise()
         {
@@ -21,16 +23,28 @@ namespace GGJ_Deceive
             // Y axis: 0 - -2
 
             random_ = new Random();
-            
+            position_ = new Vector3(River.GenerateValidPos(), -River.segments);
+            velocity_ = new Vector3(0);
         }
-
 
         public void Update()
         {
             position_ += velocity_;
 
             // Move relative to the snake's speed
-            position_.Z += -Game1.Snake.snakeVelocity_.Z;
+            position_.Z += -Game1.snake.snakeVelocity_;
+        }
+
+        internal void DoesCollides(Snake snake)
+        {
+            // TODO Use some bounding spheres
+            throw new NotImplementedException();
+        }
+
+        internal void Draw()
+        {
+            // TODO Draw the thing
+            throw new NotImplementedException();
         }
     }
 }

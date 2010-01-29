@@ -85,7 +85,7 @@ namespace GGJ_Deceive
         short[] water_indicies = null;
         Effect effect;
         const int segement_vertex_count = 2 * 3 * 3;
-        const int segments = 20;
+        public const int segments = 20;
 
         Vector3 NextTreeStart()
         {
@@ -306,10 +306,24 @@ namespace GGJ_Deceive
         public static void BoundValues(Vector2 position)
         {
             position.Y = Math.Min(position.Y, -BOUNDARY_BUFFER);
-            position.Y = Math.Max(position.Y, BOTTOM - BOUNDARY_BUFFER);
+            position.Y = Math.Max(position.Y, BOTTOM + BOUNDARY_BUFFER);
             float xWall = TOP_WIDTH / 2 + position.Y * (TOP_WIDTH - BOTTOM_WIDTH) / 2;
             position.X = Math.Min(position.X, xWall - BOUNDARY_BUFFER);
             position.X = Math.Max(position.X, -xWall + BOUNDARY_BUFFER);
+        }
+
+        public static Vector2 GenerateValidPos()
+        {
+            Random random = new Random();
+            double y = -BOUNDARY_BUFFER - random.NextDouble() * (BOTTOM + 2 * BOUNDARY_BUFFER);
+            double xWall = TOP_WIDTH / 2 + y * (TOP_WIDTH - BOTTOM_WIDTH) / 2;
+            double x = random.NextDouble() * xWall;
+
+            if (random.NextDouble() < 0.5)
+                y *= -1;
+            if (random.NextDouble() < 0.5)
+                x *= -1;
+            return new Vector2((float) x, (float) y);
         }
     }
 }

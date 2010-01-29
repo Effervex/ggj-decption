@@ -22,7 +22,9 @@ namespace GGJ_Deceive
 
         /** The deviance from the centre of the snake. */
         public Vector2[] snakeBody_;
-        public Vector3 snakeVelocity_;
+        public float snakeVelocity_;
+        public bool horizontalMovement_ = false;
+        public bool verticalMovement_ = false;
 
         public VertexPositionNormalTexture[] vertices_;
         public VertexBuffer vb_;
@@ -114,19 +116,13 @@ namespace GGJ_Deceive
 
         private void calculateVelocity()
         {
-            float sumX = 0;
-            float sumY = 0;
             float absSum = 0;
-            for (int i = 0; i < snakeBody_.Length; i++)
+            for (int i = 1; i < snakeBody_.Length; i++)
             {
-                sumX += snakeBody_[i].X;
-                sumY += snakeBody_[i].Y;
-                absSum += Math.Abs(snakeBody_[i].X);
+                absSum += Math.Abs(snakeBody_[i].X - snakeBody_[i - 1].X);
             }
 
-            snakeVelocity_.X += sumX * ALPHA;
-            snakeVelocity_.Y += sumY * ALPHA;
-            snakeVelocity_.Z -= absSum * BETA;
+            snakeVelocity_ -= absSum * BETA;
         }
 
         private void moveBody(Rectangle windowSize)
