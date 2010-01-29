@@ -84,7 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ItemSpawner.cs" />
+    <Compile Include="ThingSpawner.cs" />
     <Compile Include="Fish.cs" />
     <Compile Include="PufferFish.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -92,6 +92,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="River.cs" />
     <Compile Include="Snake.cs" />
+    <Compile Include="StateMachine.cs" />
     <Compile Include="Thing.cs" />
   </ItemGroup>
   <ItemGroup>
