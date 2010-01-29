@@ -11,22 +11,24 @@ namespace GGJ_Deceive
     {
         Texture2D texture_a;
         Texture2D texture_b;
+        Texture2D texture_c;
         VertexPositionNormalTexture[] vertices = null;
         short[] indicies = null;
 
 
         public void Draw(Effect sceneEffect, Matrix transform, int texture)
         {
-            sceneEffect.Parameters["TreeTexture"].SetValue(texture == 0 ? texture_a : texture_b);
-            sceneEffect.Parameters["View"].SetValue(Game1.View);
+            sceneEffect.Parameters["TreeTexture"].SetValue(texture == 0 ? texture_a : texture == 1 ? texture_b : texture_c);
             sceneEffect.Parameters["World"].SetValue(transform);
-            sceneEffect.Parameters["Projection"].SetValue(Game1.Projection);
 
+            Game1.GraphicsDevice.RenderState.AlphaTestEnable = true;
+            Game1.GraphicsDevice.RenderState.AlphaFunction = CompareFunction.Greater;
+
+            Game1.GraphicsDevice.RenderState.ReferenceAlpha = 122;
             sceneEffect.CurrentTechnique = sceneEffect.Techniques["Technique3"];
 
             sceneEffect.Begin();
 
-            Game1.GraphicsDevice.RenderState.AlphaTestEnable = true;
             foreach (EffectPass p in sceneEffect.CurrentTechnique.Passes)
             {
                 p.Begin();
@@ -44,6 +46,7 @@ namespace GGJ_Deceive
         {
             texture_a = Game1.GetInstance.Content.Load<Texture2D>("Tree1");
             texture_b = Game1.GetInstance.Content.Load<Texture2D>("Tree2");
+            texture_c = Game1.GetInstance.Content.Load<Texture2D>("Tree3");
  
             indicies = new short[6];
             indicies[0] = 0;
@@ -54,10 +57,10 @@ namespace GGJ_Deceive
             indicies[5] = 3;
 
             vertices = new VertexPositionNormalTexture[4];
-            vertices[0] = new VertexPositionNormalTexture(new Vector3(-1, 0, 0), Vector3.Forward, new Vector2(0, 0));
-            vertices[1] = new VertexPositionNormalTexture(new Vector3(-1, 4, 0), Vector3.Forward, new Vector2(0, 1));
-            vertices[2] = new VertexPositionNormalTexture(new Vector3(1, 4, 0), Vector3.Forward, new Vector2(1, 1));
-            vertices[3] = new VertexPositionNormalTexture(new Vector3(1, 0, 0), Vector3.Forward, new Vector2(1, 0));
+            vertices[0] = new VertexPositionNormalTexture(new Vector3(-3, 0, 0), Vector3.Forward, new Vector2(0, 0));
+            vertices[1] = new VertexPositionNormalTexture(new Vector3(-3, 8, 0), Vector3.Forward, new Vector2(0, 1));
+            vertices[2] = new VertexPositionNormalTexture(new Vector3(3, 8, 0), Vector3.Forward, new Vector2(1, 1));
+            vertices[3] = new VertexPositionNormalTexture(new Vector3(3, 0, 0), Vector3.Forward, new Vector2(1, 0));
 
         }
     }
@@ -68,9 +71,7 @@ namespace GGJ_Deceive
         public const float BOTTOM_WIDTH = 2;
         public const float TOP_WIDTH = 4;
         public const float BOUNDARY_BUFFER = 0.1f;
-
-
-        static float RiverSpeed = 0.1f;
+        static float RiverSpeed = 0.01f;
         static float RiverOffset = 0f;
         List<Matrix> treeInstances = new List<Matrix>();
         const int tree_count = 10;
@@ -80,7 +81,9 @@ namespace GGJ_Deceive
 
         VertexPositionNormalTexture[] water_vertices = null;
         VertexPositionNormalTexture[] river_vertices = null;
-        VertexDeclaration vd;
+        VertexPositionNormalTexture[] background_vertices = null;
+
+        short[] background_indicies = null;
         short[] river_indicies = null;
         short[] water_indicies = null;
         Effect effect;
@@ -91,7 +94,7 @@ namespace GGJ_Deceive
         {
             float side_pos = (float)((new Random().NextDouble() > 0.5) ?
             new Random().NextDouble() + 3 : -new Random().NextDouble() - 3);
-            return new Vector3(side_pos, 0, 0);
+            return new Vector3(side_pos, (float)(new Random().NextDouble() - 0.5) * 2f, 0);
         }
 
         public void Update()
@@ -120,11 +123,81 @@ namespace GGJ_Deceive
             }
         }
 
+        public void DrawRefracted()
+        {
+            effect.Parameters["World"].SetValue(Matrix.Identity);
+            effect.Parameters["View"].SetValue(Game1.View);
+            effect.Parameters["Projection"].SetValue(Game1.Projection);
+
+            effect.CurrentTechnique = effect.Techniques["Technique4"];
+            effect.Begin();
+
+            foreach (EffectPass p in effect.CurrentTechnique.Passes)
+            {
+                p.Begin();
+                Game1.GetInstance.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(
+                    PrimitiveType.TriangleList,
+                    background_vertices, 0, 4, background_indicies, 0, 2);
+                p.End();
+            }
+
+            effect.End();
+
+
+
+            effect.CurrentTechnique = effect.Techniques["Technique1"];
+            effect.Parameters["riverOffset"].SetValue(RiverOffset);
+            effect.Parameters["FloorTexture"].SetValue(riverfloor);
+
+
+            effect.Begin();
+
+            foreach (EffectPass p in effect.CurrentTechnique.Passes)
+            {
+                p.Begin();
+                Game1.GetInstance.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(
+                    PrimitiveType.TriangleList,
+                    river_vertices, 0, (segement_vertex_count * segments), river_indicies, 0, (segments * 6));
+                p.End();
+            }
+
+            effect.End();
+
+            int i = 0;
+            foreach (Matrix t in treeInstances)
+                riverTree.Draw(effect, t, i++ % 5);
+
+        }
+
         public void Draw()
         {
+            
 
-            Game1.GraphicsDevice.VertexDeclaration = vd;
-            Game1.GraphicsDevice.Textures[0] = riverfloor;
+            
+            //NOW DRAW WATER
+
+            effect.Parameters["World"].SetValue(Matrix.Identity);
+            effect.Parameters["SceneTexture"].SetValue(Game1.refractBuffer.GetTexture());
+            effect.Parameters["FloorTexture"].SetValue(riverwater);
+            Game1.GraphicsDevice.RenderState.AlphaBlendEnable = true;
+            Game1.GraphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            Game1.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            Game1.GraphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
+
+            effect.CurrentTechnique = effect.Techniques["Technique2"];
+            effect.Begin();
+
+            foreach (EffectPass p in effect.CurrentTechnique.Passes)
+            {
+                p.Begin();
+                Game1.GetInstance.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(PrimitiveType.TriangleList,
+                    water_vertices, 0, 4, water_indicies, 0, 2);
+                p.End();
+            }
+
+            effect.End();
+            Game1.GraphicsDevice.RenderState.AlphaBlendEnable = false;
+              Game1.GraphicsDevice.Textures[0] = riverfloor;
 
             effect.Parameters["FloorTexture"].SetValue(riverfloor);
             effect.Parameters["View"].SetValue(Game1.View);
@@ -146,32 +219,13 @@ namespace GGJ_Deceive
 
             effect.End();
 
+            //draw trees again becase they pass thru the water
             int i = 0;
-            foreach(Matrix t in treeInstances)
-                riverTree.Draw(effect, t, i++ % 3);
+            foreach (Matrix t in treeInstances)
+                riverTree.Draw(effect, t, i++ % 5);
 
-            //NOW DRAW WATER
-
-            effect.Parameters["World"].SetValue(Matrix.Identity);
-            Game1.GraphicsDevice.RenderState.AlphaBlendEnable = true;
-            Game1.GraphicsDevice.RenderState.AlphaBlendEnable = true;
-            Game1.GraphicsDevice.RenderState.SourceBlend = Blend.One;
-            Game1.GraphicsDevice.RenderState.DestinationBlend = Blend.One;
-            Game1.GraphicsDevice.RenderState.BlendFunction = BlendFunction.Add;
-
-            effect.CurrentTechnique = effect.Techniques["Technique2"];
-            effect.Begin();
-
-            foreach (EffectPass p in effect.CurrentTechnique.Passes)
-            {
-                p.Begin();
-                Game1.GetInstance.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(PrimitiveType.TriangleList,
-                    water_vertices, 0, 4, water_indicies, 0, 2);
-                p.End();
-            }
-
-            effect.End();
-            Game1.GraphicsDevice.RenderState.AlphaBlendEnable = false;
+            Game1.GraphicsDevice.RenderState.DepthBufferWriteEnable = true;
+           // Game1.GraphicsDevice.DepthStencilBuffer = old;
         }
 
         public float LeftSideBump(float pos)
@@ -184,7 +238,7 @@ namespace GGJ_Deceive
         }
         public float BottomSideBump(float pos)
         {
-            return 0.25f * ((float)Math.Cos((double)pos));
+            return 0.125f * ((float)Math.Cos((double)pos*2) + (float)Math.Sin((double)pos * .5));
         }
 
         public void CreateSegement(int index)
@@ -257,14 +311,12 @@ namespace GGJ_Deceive
 
             for (int i = 0; i < tree_count; i++)
             {
-                Matrix scale = Matrix.CreateScale(new Vector3((float)(new Random().NextDouble() * 3 + 0.1)));
-                Matrix t = Matrix.CreateTranslation(NextTreeStart() + new Vector3(0, 0, 10 * (float)i / (float)tree_count));
-                treeInstances.Add(t*scale);
+                Matrix t = Matrix.CreateTranslation(new Vector3((float)(new Random().Next() - 0.5f * 3.0f), 0, 10 * (float)i / (float)tree_count));
+                treeInstances.Add(t);
             }
-                
 
+            riverwater = Game1.GetInstance.Content.Load<Texture2D>("Water");
             riverfloor = Game1.GetInstance.Content.Load<Texture2D>("Riverfloor");
-            vd = new VertexDeclaration(Game1.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
             effect = Game1.GetInstance.Content.Load<Effect>("River");
 
             river_indicies = new short[segement_vertex_count * segments];
@@ -290,9 +342,23 @@ namespace GGJ_Deceive
             
             water_vertices = new VertexPositionNormalTexture[4];
             water_vertices[0] = new VertexPositionNormalTexture(new Vector3(-3, water_depth, -segments), Vector3.Up, new Vector2(0, 0));
-            water_vertices[1] = new VertexPositionNormalTexture(new Vector3(-3, water_depth, segments), Vector3.Up, new Vector2(0, -1));
-            water_vertices[2] = new VertexPositionNormalTexture(new Vector3(3, water_depth, segments), Vector3.Up, new Vector2(1, 1));
+            water_vertices[1] = new VertexPositionNormalTexture(new Vector3(-3, water_depth, segments), Vector3.Up, new Vector2(0, segments));
+            water_vertices[2] = new VertexPositionNormalTexture(new Vector3(3, water_depth, segments), Vector3.Up, new Vector2(1, segments));
             water_vertices[3] = new VertexPositionNormalTexture(new Vector3(3, water_depth, -segments), Vector3.Up, new Vector2(1, 0));
+
+            background_indicies = new short[6];
+            background_indicies[0] = 0;
+            background_indicies[1] = 1;
+            background_indicies[2] = 2;
+            background_indicies[3] = 0;
+            background_indicies[4] = 2;
+            background_indicies[5] = 3;
+
+            background_vertices = new VertexPositionNormalTexture[4];
+            background_vertices[0] = new VertexPositionNormalTexture(new Vector3(-25, -5, -5), Vector3.Zero, new Vector2(0, 0));
+            background_vertices[1] = new VertexPositionNormalTexture(new Vector3(-25, 15, -5), Vector3.Zero, new Vector2(0, 1));
+            background_vertices[2] = new VertexPositionNormalTexture(new Vector3(25, 15, -5), Vector3.Zero, new Vector2(1, 1));
+            background_vertices[3] = new VertexPositionNormalTexture(new Vector3(25, -5, -5), Vector3.Zero, new Vector2(1, 0));
 
         }
 

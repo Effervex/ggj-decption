@@ -4,15 +4,28 @@ float4x4 Projection;
 
 uniform extern texture FloorTexture;
 uniform extern texture TreeTexture;
+uniform extern texture SceneTexture;
 
 sampler FloorSampler = sampler_state
 {
     Texture = <FloorTexture>;
+    minfilter = LINEAR;
+    magfilter = LINEAR;
     mipfilter = LINEAR; 
 };
 sampler TreeSampler = sampler_state
 {
     Texture = <TreeTexture>;
+    minfilter = LINEAR;
+    magfilter = LINEAR;
+    mipfilter = LINEAR; 
+};
+
+sampler SceneSampler = sampler_state
+{
+    Texture = <SceneTexture>;
+    minfilter = LINEAR;
+    magfilter = LINEAR;
     mipfilter = LINEAR; 
 };
 
@@ -31,6 +44,7 @@ struct VertexShaderOutput
 	float3 Normal : TEXCOORD1;
 	float2 Texcoord : TEXCOORD0;
 	float3 WorldPos : TEXCOORD2;
+	float4 HomPos : TEXCOORD3;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
@@ -43,8 +57,15 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     output.Normal = mul(input.Normal, World);
     output.Texcoord = input.Texcoord;
     output.WorldPos = worldPosition.xyz;
+    output.HomPos =  output.Position;
 
     return output;
+}
+
+float4 DoFog(float4 lastColor, float4 homPos) {
+
+float4 fogColor = float4(.43, .49, .43,1);
+	return lerp(lastColor,fogColor, clamp(homPos.z / 30*homPos.w,0.4,1));
 }
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
@@ -54,7 +75,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	float3 normal = normalize((color - 0.5) * 2);
 	float scalarDiffuse = dot(-input.Normal, normalize(input.WorldPos - lightPos));
 
-    return float4( color, 1) * scalarDiffuse;
+float4 lastColor = float4( color, 1) * scalarDiffuse;
+    return DoFog(lastColor, input.HomPos);
 }
 
 technique Technique1
@@ -65,16 +87,20 @@ technique Technique1
         PixelShader = compile ps_2_0 PixelShaderFunction();
     }
 }
-
+float riverOffset = 0;
 
 float4 WaterShaderFunction(VertexShaderOutput input) : COLOR0
 {
 	float3 lightPos = float3(0,0,2);
-	float3 color = tex2D(FloorSampler, input.Texcoord).rgb;
-	float3 normal = normalize((color - 0.5) * 2);
-	float scalarDiffuse = dot(-input.Normal, normalize(input.WorldPos - lightPos));
+	float3 refractColor = tex2D(FloorSampler, input.Texcoord * .25+ float2(0,-.1*riverOffset) ).rgb;
+	float3 normal = normalize((refractColor - 0.5) * 2);
+	float2 offset = refractColor.xy * 0.2f;
+input.HomPos.y *= -1;
+float2 screenCoord = 0.5 + 0.5 * ((input.HomPos.xy + offset) / input.HomPos.w);
+float4 returnColor = float4(refractColor*0.35,0) + tex2D(SceneSampler, screenCoord)*.65;
+returnColor.xyz = returnColor;
 
-    return float4(0.2,.3,1,.2);
+    return returnColor;
 }
 
 technique Technique2
@@ -89,8 +115,8 @@ technique Technique2
 
 float4 TreeShaderFunction(VertexShaderOutput input) : COLOR0
 {
-	float3 color = tex2D(TreeSampler, input.Texcoord).rgb;
-    return float4(color.xyz,.2);
+	float4 color = tex2D(TreeSampler, input.Texcoord);
+    return color;
 }
 
 technique Technique3
@@ -99,5 +125,20 @@ technique Technique3
     {
         VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 TreeShaderFunction();
+    }
+}
+
+float4 BackgroundShaderFunction(VertexShaderOutput input) : COLOR0
+{
+	float4 color = tex2D(TreeSampler, input.Texcoord) * input.Texcoord.y ;
+    return color;
+}
+
+technique Technique4
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_2_0 VertexShaderFunction();
+        PixelShader = compile ps_2_0 BackgroundShaderFunction();
     }
 }
