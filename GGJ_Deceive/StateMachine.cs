@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace GGJ_Deceive
 {
@@ -71,8 +72,16 @@ namespace GGJ_Deceive
         public void Draw(GameTime gameTime)
         {
             // Draw the current state
-            river_.Draw();
-            spawner_.Draw();
+            Game1.GraphicsDevice.SetRenderTarget(0, Game1.refractBuffer);
+            Game1.GraphicsDevice.Clear(Color.SkyBlue);
+            
+            river_.DrawRefracted();
+
+            Game1.GraphicsDevice.SetRenderTarget(0, null);
+            Game1.GraphicsDevice.Clear(new Color((byte)109, (byte)125, (byte)108, 255));
+            
+          //  river_.Draw();
+          //  spawner_.Draw();
             snake_.Draw(gameTime);
             
             // Draw any helpful text

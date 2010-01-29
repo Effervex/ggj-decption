@@ -25,6 +25,7 @@ namespace GGJ_Deceive
         public float snakeVelocity_;
         public bool horizontalMovement_ = false;
         public bool verticalMovement_ = false;
+        public Effect effect;
 
         public VertexPositionNormalTexture[] vertices_;
         public VertexBuffer vb_;
@@ -47,6 +48,8 @@ namespace GGJ_Deceive
             SetUpIndices();
 
             CopyToBuffers(device);
+
+            effect = Game1.GetInstance.Content.Load<Effect>("Snake");
         }
 
         public void Initialise()
@@ -67,6 +70,7 @@ namespace GGJ_Deceive
                     indices_[i * VERTICES_PER_SEGMENT + j++] = (short)(i * VERTICES_PER_SEGMENT + k);
                     indices_[i * VERTICES_PER_SEGMENT + j++] = (short)((i - 1) * VERTICES_PER_SEGMENT + nextK);
                     indices_[i * VERTICES_PER_SEGMENT + j++] = (short)((i - 1) * VERTICES_PER_SEGMENT + k);
+
                     indices_[i * VERTICES_PER_SEGMENT + j++] = (short)(i * VERTICES_PER_SEGMENT + k);
                     indices_[i * VERTICES_PER_SEGMENT + j++] = (short)(i * VERTICES_PER_SEGMENT + nextK);
                     indices_[i * VERTICES_PER_SEGMENT + j++] = (short)((i - 1) * VERTICES_PER_SEGMENT + k);
@@ -153,7 +157,26 @@ namespace GGJ_Deceive
 
         public void Draw(GameTime gameTime)
         {
+            effect.CurrentTechnique = effect.Techniques["Technique1"];
+            effect.Parameters["World"].SetValue(Matrix.CreateTranslation(new Vector3(0,0,3)));
+            effect.Parameters["View"].SetValue(Game1.View);
+            effect.Parameters["Projection"].SetValue(Game1.Projection);
+
+            Game1.GraphicsDevice.Indices = ib_;
+            Game1.GraphicsDevice.Vertices[0].SetSource(vb_,0, VertexPositionNormalTexture.SizeInBytes);
             
+            effect.Begin();
+
+            foreach (EffectPass p in effect.CurrentTechnique.Passes)
+            {
+                p.Begin();
+                Game1.GetInstance.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, vertices_.Length, 0, indices_.Length / 3);
+                p.End();
+            }
+
+            effect.End();
+
+
         }
     }
 }

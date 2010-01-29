@@ -29,6 +29,11 @@ namespace GGJ_Deceive
         public static Matrix View;
         public static Matrix Projection;
 
+        public static RenderTarget2D refractBuffer;
+
+
+        public static VertexDeclaration vd;
+
         public static new GraphicsDevice GraphicsDevice
         {
 
@@ -78,8 +83,14 @@ namespace GGJ_Deceive
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            refractBuffer = new RenderTarget2D(Game1.GraphicsDevice,
+                Game1.GraphicsDevice.Viewport.Width,
+                Game1.GraphicsDevice.Viewport.Height, 1, SurfaceFormat.Color);
+            
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            vd = new VertexDeclaration(Game1.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
+            
             river.Create();
             snake.LoadContent(GraphicsDevice);
             // TODO: use this.Content to load your game content here
@@ -102,8 +113,8 @@ namespace GGJ_Deceive
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            View = Matrix.CreateLookAt(new Vector3(0, -1, 10), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
-            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(70f),
+            View = Matrix.CreateLookAt(new Vector3(0, -1f, 10), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(130f),
                 graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
                 0.1f, 100f);
             stateMachine.Update(gameTime, Window.ClientBounds);
@@ -118,6 +129,8 @@ namespace GGJ_Deceive
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+            Game1.GraphicsDevice.VertexDeclaration = vd;
+            
             stateMachine.Draw(gameTime);
             base.Draw(gameTime);
         }
