@@ -23,6 +23,7 @@ namespace GGJ_Deceive
 
         //Game Objects
         public static River River;
+        public static Snake Snake;
         public static Matrix View;
         public static Matrix Projection;
 
@@ -47,6 +48,7 @@ namespace GGJ_Deceive
         {
 
             River = new River();
+            Snake = new Snake(20);
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             instance = this;
@@ -73,7 +75,8 @@ namespace GGJ_Deceive
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            River.Create();   
+            River.Create();
+            Snake.LoadContent(GraphicsDevice);
             // TODO: use this.Content to load your game content here
         }
 
@@ -99,6 +102,8 @@ namespace GGJ_Deceive
                 graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
                 0.1f, 100f);
             River.Update();
+            Snake.Update(gameTime, Window.ClientBounds);
+            
             base.Update(gameTime);
         }
 
@@ -110,6 +115,7 @@ namespace GGJ_Deceive
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             River.Draw();
+            Snake.Draw(gameTime);
             base.Draw(gameTime);
         }
     }
