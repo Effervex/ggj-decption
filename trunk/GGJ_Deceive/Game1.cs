@@ -21,10 +21,35 @@ namespace GGJ_Deceive
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        //Game Objects
+        public static River River;
+        public static Matrix View;
+        public static Matrix Projection;
+
+        public static GraphicsDevice GraphicsDevice
+        {
+
+            get
+            {
+                return GetInstance.GraphicsDevice;
+            }
+        }
+       static Microsoft.Xna.Framework.Game instance;
+      public  static Microsoft.Xna.Framework.Game GetInstance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+
         public Game1()
         {
+
+            River = new River();
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            instance = this;
         }
 
         /// <summary>
@@ -35,8 +60,7 @@ namespace GGJ_Deceive
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
+         //   Game1.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
             base.Initialize();
         }
 
@@ -49,6 +73,7 @@ namespace GGJ_Deceive
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            River.Create();   
             // TODO: use this.Content to load your game content here
         }
 
@@ -58,6 +83,7 @@ namespace GGJ_Deceive
         /// </summary>
         protected override void UnloadContent()
         {
+            River.Release();
             // TODO: Unload any non ContentManager content here
         }
 
@@ -68,12 +94,11 @@ namespace GGJ_Deceive
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
-
-            // TODO: Add your update logic here
-
+            View = Matrix.CreateLookAt(new Vector3(0, -1, 10), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(70f),
+                graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
+                0.1f, 100f);
+            River.Update();
             base.Update(gameTime);
         }
 
@@ -84,9 +109,7 @@ namespace GGJ_Deceive
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            // TODO: Add your drawing code here
-
+            River.Draw();
             base.Draw(gameTime);
         }
     }
