@@ -10,12 +10,12 @@ namespace GGJ_Deceive
     public class Fish : Thing
     {
         // Model constants
-        public const float FISH_HEIGHT = 0.4f;
-        public const float FISH_WIDTH = 0.15f;
-        public const float FISH_LENGTH = 0.4f;
-        public const float TAIL_LENGTH = 0.15f;
-        public const float TAIL_INDENT = 0.08f;
-        public const float NOSE_PERCENT = 0.15f;
+        public const float FISH_HEIGHT = 0.3f;
+        public const float FISH_WIDTH = 0.05f;
+        public const float FISH_LENGTH = 0.3f;
+        public const float TAIL_LENGTH = 0.05f;
+        public const float TAIL_INDENT = 0.02f;
+        public const float NOSE_PERCENT = 0.35f;
 
         public const float SNAKE_EATING_PERCENT = 0.1f;
         public const float MIN_VELOCITY = 0.001f;
@@ -26,6 +26,7 @@ namespace GGJ_Deceive
         override public void LoadContent()
         {
             base.LoadContent();
+
 
             float max = Math.Max(scale_.X, Math.Max(scale_.Y, scale_.Z));
             sphereSize_ = FISH_HEIGHT * max;
@@ -45,8 +46,17 @@ namespace GGJ_Deceive
         {
             base.Update(gameTime);
 
-            double sinVal = Math.Sin(River.time * 500);
-            position_.X += (float) (0.01 * sinVal);
+            float sinVal = (float)Math.Sin(position_.Z * 10 + River.time * 200) * 0.5f + 0.5f;
+            //position_.X += (float) (0.01 * sinVal);
+
+            float sin = ((float)Math.Sin((River.time) * 200)) * 0.015f;
+            vertices_[7].Position.X += sin;
+            vertices_[9].Position.X += sin;
+            vertices_[8].Position.X += sin;
+
+                vertices_[1].Position.Y = sinVal * .1F;
+                vertices_[4].Position.Y = -sinVal * .1F;
+            
         }
 
         public override int DoesCollides(Snake snake)
@@ -57,6 +67,7 @@ namespace GGJ_Deceive
             {
                 if (edible_)
                 {
+                    Blood.AddBlood(position_, River.random.Next(35, 55));
                     // Insert eating code here.
                     Snake.cakeBatterCount++;
                     removeThis = true;

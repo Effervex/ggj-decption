@@ -21,9 +21,10 @@ namespace GGJ_Deceive
 
         public Thing() {
         }
-
+        
         virtual public void LoadContent()
         {
+                effect = Game1.GetInstance.Content.Load<Effect>("Fish");
             // Spawn within the 2x2 area
             // X axis: -1 - 1
             // Y axis: 0 - -2
@@ -36,7 +37,6 @@ namespace GGJ_Deceive
                 (float)(0.5 + random_.NextDouble()),
                 (float)(0.5 + random_.NextDouble()));
 
-            effect = Game1.GetInstance.Content.Load<Effect>("Snake");
         }
 
         virtual public void Update(GameTime gameTime)
@@ -73,7 +73,14 @@ namespace GGJ_Deceive
         internal void Draw()
         {
             effect.CurrentTechnique = effect.Techniques["Technique1"];
-            effect.Parameters["World"].SetValue(Matrix.CreateScale(scale_) * Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z)));
+
+            Matrix m = Matrix.Identity;
+            m.Forward = -Vector3.Normalize(velocity_);
+            m.Right = Vector3.Normalize(Vector3.Cross(m.Forward, Vector3.Up));
+            m.Up = Vector3.Cross(m.Forward, m.Right);
+            m.Translation = position_;
+
+            effect.Parameters["World"].SetValue(Matrix.CreateScale(scale_)*m);//Matrix.CreateScale(scale_) * Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z)));
             effect.Parameters["View"].SetValue(Game1.View);
             effect.Parameters["Projection"].SetValue(Game1.Projection);
 

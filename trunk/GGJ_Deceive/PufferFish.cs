@@ -59,6 +59,10 @@ namespace GGJ_Deceive
 
             if (latched)
             {
+                vertices_[1].Position.Y = 0;
+                vertices_[4].Position.Y = 0;
+
+                Blood.AddBlood(position_, River.random.Next(1, 2));
                 // Set the position as latched
                 position_ = Game1.snake.snakeBody_[latchIndex];
             }
