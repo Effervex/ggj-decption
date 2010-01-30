@@ -18,6 +18,7 @@ namespace GGJ_Deceive
         public float sphereSize_;
         public Effect effect;
         public bool removeThis = false;
+        public float rotation = 0;
 
         public Thing() {
         }
@@ -30,7 +31,7 @@ namespace GGJ_Deceive
             // Y axis: 0 - -2
 
             random_ = new Random();
-            position_ = new Vector3(River.GenerateValidPos(), -River.segments);
+            position_ = new Vector3(River.GenerateValidPos(), -(River.segments / 2));
             velocity_ = new Vector3(0);
 
             scale_ = new Vector3((float)(0.5 + random_.NextDouble()),
@@ -74,13 +75,12 @@ namespace GGJ_Deceive
         {
             effect.CurrentTechnique = effect.Techniques["Technique1"];
 
-            Matrix m = Matrix.Identity;
-            m.Forward = -Vector3.Normalize(velocity_);
-            m.Right = Vector3.Normalize(Vector3.Cross(m.Forward, Vector3.Up));
-            m.Up = Vector3.Cross(m.Forward, m.Right);
-            m.Translation = position_;
+            Matrix m = Matrix.CreateScale(scale_);
+            if (rotation != 0)
+                m *= Matrix.CreateRotationY(rotation);
+            m *= Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z));
 
-            effect.Parameters["World"].SetValue(Matrix.CreateScale(scale_)*m);//Matrix.CreateScale(scale_) * Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z)));
+            effect.Parameters["World"].SetValue(m);//Matrix.CreateScale(scale_) * Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z)));
             effect.Parameters["View"].SetValue(Game1.View);
             effect.Parameters["Projection"].SetValue(Game1.Projection);
 
