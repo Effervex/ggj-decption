@@ -11,12 +11,13 @@ namespace GGJ_Deceive
     {
         public Vector3 position_;
         public Vector3 velocity_;
-        protected Random random_;
+        protected static Random random_;
         public VertexPositionNormalTexture[] vertices_;
         public int[] indices_;
-        public float scale_;
+        public Vector3 scale_;
         public float sphereSize_;
         public Effect effect;
+        public bool removeThis = false;
 
         public Thing() {
         }
@@ -31,12 +32,14 @@ namespace GGJ_Deceive
             position_ = new Vector3(River.GenerateValidPos(), -River.segments);
             velocity_ = new Vector3(0);
 
-            scale_ = (float)(0.5 + random_.NextDouble());
+            scale_ = new Vector3((float)(0.5 + random_.NextDouble()),
+                (float)(0.5 + random_.NextDouble()),
+                (float)(0.5 + random_.NextDouble()));
 
             effect = Game1.GetInstance.Content.Load<Effect>("Snake");
         }
 
-        virtual public void Update()
+        virtual public void Update(GameTime gameTime)
         {
             position_ += velocity_;
 

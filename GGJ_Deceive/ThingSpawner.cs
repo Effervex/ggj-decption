@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace GGJ_Deceive
 {
     public class ThingSpawner
     {
-        public const float CHANCE_TO_SPAWN = 0.1f;
+        public const float CHANCE_TO_SPAWN = 0.05f;
         public const int MAX_OBJECTS = 200;
         public const float MAX_ENEMY_CHANCE = 0.75f;
         public const float INCREASING_CHANCE = 0.0001f;
@@ -27,24 +28,24 @@ namespace GGJ_Deceive
 
         private static bool RemoveThing(Thing thing)
         {
-            if (thing.position_.Z > River.segments / 2)
+            if ((thing.removeThis) || (thing.position_.Z > River.segments / 2))
                 return true;
             else
                 return false;
         }
 
 
-        public void Update()
+        public void Update(GameTime gameTime)
         {
             // Check the player collisions with things
             foreach (Thing thing in things_)
             {
-                thing.Update();
+                thing.Update(gameTime);
                 thing.DoesCollides(Game1.snake);
             }
             things_.RemoveAll(RemoveThing);
 
-            Random random = new Random();
+            Random random = River.random;
             if ((things_.Count < MAX_OBJECTS)
                 && (random.NextDouble() < CHANCE_TO_SPAWN * (1 + Game1.snake.snakeVelocity_)))
             {
