@@ -8,9 +8,9 @@ namespace GGJ_Deceive
 {
     public class PufferFish : Fish
     {
-        public const float PUFF_DISTANCE = 4f;
+        public const float PUFF_DISTANCE = 2f;
         public const float INITIAL_LOSS = 1f;
-        public const float HEALTH_LOSS = 0.05f;
+        public const float HEALTH_LOSS = 0.1f;
 
         public Boolean isPuffed_;
 
@@ -25,7 +25,12 @@ namespace GGJ_Deceive
             edible_ = false;
             isPuffed_ = false;
         }
-
+        public override void Draw(Matrix extra, float puff)
+        {
+            effect.CurrentTechnique = effect.Techniques[isPuffed_ ? "Technique2" : "Technique1"];
+            base.Draw(puffrotation, puffTime);
+            effect.CurrentTechnique = effect.Techniques["Technique1"];
+        }
         public override int DoesCollides(Snake snake)
         {
             if ((!latched) && (!loosed))
@@ -49,33 +54,42 @@ namespace GGJ_Deceive
             return -1;
         }
 
+        Matrix puffrotation = Matrix.Identity;
+        float puffTime = 0;
+        float puffrotScale = 1;
         override public void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
             // Check if the fish is within distance from Snakey
             float dist = Vector3.Distance(position_, Game1.snake.snakeBody_[0]);
             if ((!isPuffed_) && (dist < PUFF_DISTANCE))
             {
-                scale_.Y *= 2;
-                scale_.X *= 4;
-
+                
                 // Set the velocity for the snake head
-                velocity_ = (Game1.snake.snakeBody_[0] - position_ - new Vector3(0,0,-dist / 2)) / dist;
-                velocity_ *= (float) (MIN_VELOCITY + random_.NextDouble() * VELOCITY_RANGE);
+                velocity_ = (Game1.snake.snakeBody_[0] - position_) / dist;
+                velocity_ *= (float) (MIN_VELOCITY + random_.NextDouble() * VELOCITY_RANGE * 0.1f);
+                velocity_.Y += .0025f;
                 isPuffed_ = true;
+                puffrotScale = (float)River.random.NextDouble() + 0.5f;
+            }
+
+            if (isPuffed_)
+            {
+                Bubbles.AddBubbles(position_ + 0.15f * puffrotation.Backward, 1);
+                puffTime += -0.4f*puffrotScale;
+                puffrotation = Matrix.CreateRotationX(puffTime * 0.053f)
+                    * Matrix.CreateRotationZ(0 * .51f + puffTime * 0.011f);
+                //effect.Parameters["puffAmount"].SetValue(Math.Abs(puffTime) + 1);
             }
 
             if (latched)
             {
                 velocity_ = new Vector3(0, 0, -1);
 
-                vertices_[1].Position.Y = 0;
-                vertices_[4].Position.Y = 0;
-
-                Blood.AddBlood(position_, River.random.Next(1, 2));
                 // Set the position as latched
                 position_ = Game1.snake.snakeBody_[latchIndex];
+                Blood.AddBlood(position_, River.random.Next(1, 2));
+                Bubbles.AddBubbles(position_, River.random.Next(5, 8));
                 double sinVal = Math.Sin(River.time * 500);
                 rotation += (float) (0.05f * sinVal);
 

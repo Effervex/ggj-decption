@@ -305,6 +305,7 @@ namespace GGJ_Deceive
             river_.Draw();
             spawner_.Draw();
             Blood.Draw();
+            Bubbles.Draw();
             snake_.Draw(gameTime);
 
             State outState = State.NOTHING;

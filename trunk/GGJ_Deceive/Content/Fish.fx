@@ -27,55 +27,93 @@ sampler Scales = sampler_state
 struct VertexShaderInput
 {
     float4 Position : POSITION0;
-float3 Normal : NORMAL;
-float2 Aux : TEXCOORD0;
-    // TODO: add input channels such as texture
-    // coordinates and vertex colors here.
+	float3 Normal : NORMAL;
+	float2 texcoord : TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
+float3 N : TEXCOORD1;
     float4 Position : POSITION0;
-    float3 WS : TEXCOORD0;
-    float3 norm : TEXCOORD1;
-float4 Aux : TEXCOORD2;
-
-    // TODO: add vertex shader outputs such as colors and texture
-    // coordinates here. These values will automatically be interpolated
-    // over the triangle, and provided as input to your pixel shader.
+    float2 texcoord : TEXCOORD0;
+    float4 ws : TEXCOORD2;
+    float4 env : TEXCOORD3;
+    float4 tint : TEXCOORD4;
 };
+
+float4 GetColor(float4 Position) {
+
+	float4 tm = 0.51;
+	tm = sin(((Position.x + 50)/1) * .7) * .5 + .5;
+	tm += .35;
+    //tm.gb = (.5 + .5*sin(Position.x * 5)) * .5;
+    //tm += 0.1;
+    
+    float4 green = float4(0.86, .7, 0.4,1);
+    float4 blue = float4(0.6, .73, 0.9,1);
+    
+    float white = float4(.8,.7,.9,1) * .1;
+    
+    return lerp ( 
+    white,    
+    lerp(tm * blue, green,(Position.x + 20) / 40),
+    
+    clamp((Position.y + 13) / 20,0,1));
+}
+
+float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
+{
+float diffuse = dot(input.N, normalize(float3(1,1,0)));
+ 
+ float4 causticsColor = tex2D(SkyboxS,input.env.xz + float2(Time * 0.06,0));
+    
+    return tex2D(Scales,input.texcoord) * causticsColor *  GetColor(input.ws) * (.75+diffuse ) * input.tint;
+}
+
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
 
-    float4 worldPosition = mul(input.Position, World);
+float flapAmount = clamp(input.Position.x * 0.2, 0, 4);
+float waverAmount = sin(input.Position.z) * 0.5 + .5;
+
+    float4 worldPosition = mul(input.Position + 
+    waverAmount * float4(0, cos(Time * 0.5) * 2,0,0) + 
+    flapAmount * float4(0,0,sin(2*Time + input.Position.x * 0.04f) * 10,0), World);
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
-    float alongBody = input.Aux.x;
-    float isStripe = clamp(input.Aux.y,  0.1, 0.9);
-    
-    float4 yellow = float4(.8, .7, .2,1);
-    float4 orage = float4(.8,.4,.2,1);
-    
-output.Aux.xyz = lerp( yellow, orage, alongBody) * isStripe;
-output.Aux.w = alongBody;
-    // TODO: add your vertex shader code here.
-output.WS = worldPosition.xyz;
-output.WS.y = input.Normal.y * 0.5 + 0.5;
-output.norm  = mul(input.Normal, World);
+    output.ws = input.Position;
+       output.env = worldPosition;
+	output.texcoord = input.texcoord;
+	output.N = mul(input.Normal, World);
+       output.tint = float4(1, 1,1,1);
     return output;
 }
-
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
+float puffAmount = 0;
+VertexShaderOutput PuffVertexShaderFunction(VertexShaderInput input)
 {
-    // TODO: add your pixel shader code here.
-    float2 texCoord = float2(input.Aux.w * 2, input.WS.y);
-    float4 scalesColor = tex2D(Scales,texCoord);
-    float4 stripeColor = float4(input.Aux.xyz * lerp(.51, tex2D(SkyboxS, input.WS.xz + float2(0,Time)), input.norm.y), 0);
-    float4 causticsColor = tex2D(SkyboxS,input.WS.xz + float2(Time,0));
-    
-    return scalesColor * stripeColor;
+    VertexShaderOutput output;
+
+
+float3 t = input.Normal;
+
+float inflated = log( max(puffAmount ,1 )) * 5 ;
+
+
+
+    float4 worldPosition = mul(input.Position + float4(normalize(input.Normal.xyz )* inflated,0), World);
+    float4 viewPosition = mul(worldPosition, View);
+    output.Position = mul(viewPosition, Projection);
+    //output.Color = lerp( float3(1,1,1), float3(0.5,0.6,.8), clamp( inflated , 0, 1));
+    output.N = normalize(mul(input.Normal, World));
+output.texcoord = input.texcoord;
+output.ws = input.Position;
+       output.env = worldPosition;
+       
+       float c = 1- clamp(0,.51,puffAmount * .55);
+       output.tint = float4(c, 1, c,1);
+    return output;
 }
 
 technique Technique1
@@ -85,6 +123,18 @@ technique Technique1
         // TODO: set renderstates here.
 
         VertexShader = compile vs_2_0 VertexShaderFunction();
+        PixelShader = compile ps_2_0 PixelShaderFunction();
+    }
+}
+
+
+technique Technique2
+{
+    pass Pass1
+    {
+        // TODO: set renderstates here.
+
+        VertexShader = compile vs_2_0 PuffVertexShaderFunction();
         PixelShader = compile ps_2_0 PixelShaderFunction();
     }
 }

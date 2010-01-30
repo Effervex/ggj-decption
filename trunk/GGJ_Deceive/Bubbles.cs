@@ -7,17 +7,17 @@ using Microsoft.Xna.Framework;
 
 namespace GGJ_Deceive
 {
-    class Blood
+    class Bubbles
     {
-        static Texture2D blood;
+        static Texture2D bubble;
         static Effect effect;
 
         static List<VertexPositionNormalTexture> particles = new List<VertexPositionNormalTexture>();
 
         static public void Initalize() {
 
-            effect = Game1.GetInstance.Content.Load<Effect>("Blood");
-            blood = Game1.GetInstance.Content.Load<Texture2D>("blood1");
+            effect = Game1.GetInstance.Content.Load<Effect>("Bubble");
+            bubble = Game1.GetInstance.Content.Load<Texture2D>("Debry3");
         }
 
         static Vector3 random
@@ -28,15 +28,15 @@ namespace GGJ_Deceive
             }
         }
 
-        static public void AddBlood(Vector3 position, int count)
+        static public void AddBubbles(Vector3 position, int count)
         {
 
             for (int i = 0; i < count; i++)
             {
 
-                particles.Add(new VertexPositionNormalTexture(position,
+                particles.Add(new VertexPositionNormalTexture(position + random * 0.1f,
                     random,
-                    new Vector2((float)River.random.NextDouble() * 4.0f, 4 * (float)River.random.NextDouble() + 1f)));
+                    new Vector2((float)River.random.NextDouble() * 0.7f, 1.61f * (float)River.random.NextDouble() + .1f)));
             }
         }
 
@@ -53,9 +53,11 @@ namespace GGJ_Deceive
             particles.RemoveAll(DeadUpdateFilter);
             for (int i = 0; i < particles.Count; i++)
             {
-                Vector3 p = particles[i].Position + particles[i].Normal * 0.01f;
+                Vector3 n = particles[i].Normal;// .Y += 1; n
+                n.Y += 0.01f;
+                Vector3 p = particles[i].Position + n * 0.01f;
                 Vector2 t = new Vector2(particles[i].TextureCoordinate.X - 0.010f, particles[i].TextureCoordinate.Y);
-                particles[i] = new VertexPositionNormalTexture(p, particles[i].Normal, t);
+                particles[i] = new VertexPositionNormalTexture(p, n, t);
             }
             
         }
@@ -67,7 +69,7 @@ namespace GGJ_Deceive
             Game1.GraphicsDevice.RenderState.DepthBufferWriteEnable = false;
             Game1.GraphicsDevice.RenderState.AlphaBlendEnable = true;
             Game1.GraphicsDevice.RenderState.PointSpriteEnable = true;
-            effect.Parameters["bloodTexture"].SetValue(blood);
+            effect.Parameters["bloodTexture"].SetValue(bubble);
             
             effect.Parameters["View"].SetValue(Game1.View);
             effect.Parameters["Projection"].SetValue(Game1.Projection);

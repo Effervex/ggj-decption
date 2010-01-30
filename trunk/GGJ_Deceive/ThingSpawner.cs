@@ -25,13 +25,10 @@ namespace GGJ_Deceive
         {
             things_ = new List<Thing>();
         }
-        Thing temp;
+
         public void LoadContent()
         {
-            temp = new Fish();
-            things_.Add(temp);
-            temp.LoadContent();
-            temp.position_ = new Vector3(0, -1.5f, 5f);
+            
         }
 
         private static bool RemoveThing(Thing thing)
@@ -45,7 +42,6 @@ namespace GGJ_Deceive
 
         public void Update(GameTime gameTime)
         {
-            temp.position_ = new Vector3(1, -1.5f, 8.5f);
             // Check the player collisions with things
             foreach (Thing thing in things_)
             {
@@ -92,7 +88,7 @@ namespace GGJ_Deceive
         {
             foreach (Thing thing in things_)
             {
-                thing.Draw();
+                thing.Draw(Matrix.Identity, 0);
             }
         }
     }
