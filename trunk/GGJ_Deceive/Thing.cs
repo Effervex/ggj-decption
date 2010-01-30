@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace GGJ_Deceive
 {
@@ -11,12 +12,16 @@ namespace GGJ_Deceive
         public Vector3 position_;
         public Vector3 velocity_;
         protected Random random_;
+        public VertexPositionNormalTexture[] vertices_;
+        public int[] indices_;
+        public float scale_;
+        public float sphereSize_;
+        public Effect effect;
 
         public Thing() {
-            Initialise();
         }
 
-        public void Initialise()
+        virtual public void LoadContent()
         {
             // Spawn within the 2x2 area
             // X axis: -1 - 1
@@ -25,26 +30,64 @@ namespace GGJ_Deceive
             random_ = new Random();
             position_ = new Vector3(River.GenerateValidPos(), -River.segments);
             velocity_ = new Vector3(0);
+
+            scale_ = (float)(0.5 + random_.NextDouble());
+
+            effect = Game1.GetInstance.Content.Load<Effect>("Snake");
         }
 
-        public void Update()
+        virtual public void Update()
         {
             position_ += velocity_;
 
             // Move relative to the snake's speed
-            position_.Z += -Game1.snake.snakeVelocity_;
+            position_.Z += Game1.snake.snakeVelocity_;
+            position_ = River.BoundValues(position_);
         }
 
-        internal void DoesCollides(Snake snake)
+        /**
+         * Returns the index of the snake part collided with, or -1.
+         */
+        virtual public int DoesCollides(Snake snake)
         {
-            // TODO Use some bounding spheres
-            throw new NotImplementedException();
+            for (int i = 0; i < snake.snakeBody_.Length; i++)
+            {
+                // Snake head is always at the lowest Z-value, so igonre further checks if the thing is still too far away.
+                if (position_.Z + sphereSize_ < snake.snakeBody_[i].Z)
+                    return -1;
+
+                // Otherwise run through until collision
+                float collisionDistance = Snake.GetBodyThickness(snake.snakeBody_.Length, i) + sphereSize_;
+                if (Vector3.Distance(snake.snakeBody_[i], position_) <= collisionDistance)
+                {
+                    // Collision!
+                    return i;
+                }
+            }
+            return -1;
         }
 
         internal void Draw()
         {
-            // TODO Draw the thing
-            throw new NotImplementedException();
+            effect.CurrentTechnique = effect.Techniques["Technique1"];
+            effect.Parameters["World"].SetValue(Matrix.CreateScale(scale_) * Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z)));
+            effect.Parameters["View"].SetValue(Game1.View);
+            effect.Parameters["Projection"].SetValue(Game1.Projection);
+
+            effect.Begin();
+
+            foreach (EffectPass p in effect.CurrentTechnique.Passes)
+            {
+                p.Begin();
+                Game1.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(PrimitiveType.TriangleList, vertices_, 0, vertices_.Length, indices_, 0, indices_.Length / 3);
+                p.End();
+            }
+
+            effect.End();
         }
+
+        public abstract void SetUpVertices();
+
+        public abstract void SetUpIndices();
     }
 }

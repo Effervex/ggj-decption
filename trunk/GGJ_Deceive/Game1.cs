@@ -18,6 +18,8 @@ namespace GGJ_Deceive
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        public const float NEAR_PLANE_DIST = 0.1f;
+
         GraphicsDeviceManager graphics;
 
         //Game Objects
@@ -53,7 +55,7 @@ namespace GGJ_Deceive
         {
             overlay = new Overlays();
             river = new River();
-            snake = new Snake(30);
+            snake = new Snake(40);
             thingSpawner = new ThingSpawner();
             stateMachine = new StateMachine();
             graphics = new GraphicsDeviceManager(this);
@@ -93,6 +95,7 @@ namespace GGJ_Deceive
             overlay.LoadContent();
             river.Create();
             snake.LoadContent(GraphicsDevice);
+            thingSpawner.LoadContent();
             // TODO: use this.Content to load your game content here
         }
 
@@ -119,10 +122,10 @@ namespace GGJ_Deceive
             // Keep mouse in bounds
             BoundMouse();
 
-            View = Matrix.CreateLookAt(new Vector3(0, -1f, 10), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+            View = Matrix.CreateLookAt(new Vector3(0, River.BOTTOM / 2, 10), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
             Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(130f),
                 graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
-                0.1f, 100f);
+                NEAR_PLANE_DIST, 100f);
             stateMachine.Update(gameTime, Window.ClientBounds);
 
             overlay.Update();
