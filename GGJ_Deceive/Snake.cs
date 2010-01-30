@@ -11,17 +11,16 @@ namespace GGJ_Deceive
 {
     public class Snake
     {
-        public const float BODY_COEFFICIENT = 1f;
         public const float MAX_HEAD_SPEED = 0.05f;
         public const short VERTICES_PER_SEGMENT = 4;
         public static float INITIAL_BODY_THICKNESS = 0.1f;
         public const float LENGTH_BY_THICKNESS = 10;
-        public const float VELOCITY_COEFFICIENT = 0.03f;
+        public const float VELOCITY_COEFFICIENT = 0.04f;
         public const float CURVE_COEFFICIENT = 0.15f;
-        public const float IDLE_SNAKE_EPSILON = 0.1f;
+        public const float IDLE_SNAKE_EPSILON = 0.001f;
 
         /** The deviance from the centre of the snake. */
-        public Vector2[] snakeBody_;
+        public Vector3[] snakeBody_;
         public float snakeVelocity_;
         public bool horizontalMovement_ = false;
         public bool verticalMovement_ = false;
@@ -37,10 +36,12 @@ namespace GGJ_Deceive
 
         public Snake(int initialSegments)
         {
-            snakeBody_ = new Vector2[initialSegments];
+            snakeBody_ = new Vector3[initialSegments];
             for (int i = 0; i < initialSegments; i++)
             {
-                snakeBody_[i] = new Vector2(0);
+                float segmentLength = LENGTH_BY_THICKNESS * INITIAL_BODY_THICKNESS / snakeBody_.Length;
+                float zCoord = River.segments / 2 - LENGTH_BY_THICKNESS * INITIAL_BODY_THICKNESS - Game1.NEAR_PLANE_DIST;
+                snakeBody_[i] = new Vector3(0, River.BOTTOM * .6f, zCoord + i * segmentLength);
             }
         }
 
@@ -93,7 +94,7 @@ namespace GGJ_Deceive
         public void Update(GameTime gameTime, Rectangle windowSize)
         {
             calculateVelocity();
-            moveBody(windowSize);
+            moveBody(gameTime, windowSize);
             updateVertices();
 
             prevState_ = Mouse.GetState();
@@ -112,30 +113,28 @@ namespace GGJ_Deceive
 
         private void updateVertices()
         {
-            float segmentLength = LENGTH_BY_THICKNESS * INITIAL_BODY_THICKNESS / snakeBody_.Length;
+            
             for (int i = 0; i < snakeBody_.Length; i++)
             {
                 float stripe = (i % 2 == 0) ? 0 : 1;
                 float alongFrac = MathHelper.Clamp(1f - (float)i / (float)snakeBody_.Length,0.1f,1.0f);
-                
-                float bodySize = (float) (INITIAL_BODY_THICKNESS * Math.Pow(Math.Log(snakeBody_.Length - i) / Math.Log(snakeBody_.Length), 1));
+				float bodySize = GetBodyThickness(snakeBody_.Length, i);
                 vertices_[i * VERTICES_PER_SEGMENT] =
-                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X, snakeBody_[i].Y + bodySize / 2, i * segmentLength),
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X, snakeBody_[i].Y + bodySize / 2, snakeBody_[i].Z),
                         Vector3.UnitY,
                         new Vector2(alongFrac, stripe));
                 vertices_[i * VERTICES_PER_SEGMENT + 1] =
-                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X - bodySize / 2, snakeBody_[i].Y, i * segmentLength),
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X - bodySize / 2, snakeBody_[i].Y, snakeBody_[i].Z),
                         -Vector3.UnitX,
                        new Vector2(alongFrac, stripe));
                 vertices_[i * VERTICES_PER_SEGMENT + 2] =
-                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X, snakeBody_[i].Y - bodySize / 2f, i * segmentLength),
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X, snakeBody_[i].Y - bodySize / 2f, snakeBody_[i].Z),
                         -Vector3.UnitY,
                         new Vector2(alongFrac, stripe));
                 vertices_[i * VERTICES_PER_SEGMENT + 3] =
-                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X + bodySize / 2, snakeBody_[i].Y, i * segmentLength),
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X + bodySize / 2, snakeBody_[i].Y, snakeBody_[i].Z),
                        Vector3.UnitX,
                        new Vector2(alongFrac, stripe));
-                bodySize -= 0.002f;
             }
         }
 
@@ -171,7 +170,7 @@ namespace GGJ_Deceive
             snakeVelocity_ = absSum * VELOCITY_COEFFICIENT;
         }
 
-        private void moveBody(Rectangle windowSize)
+        private void moveBody(GameTime gameTime, Rectangle windowSize)
         {
             // Move the head towards the mouse
             float relativeX = (float) (2.0 * Mouse.GetState().X / windowSize.Width - 1);
@@ -184,20 +183,25 @@ namespace GGJ_Deceive
 
             snakeBody_[0].X += relativeX * MAX_HEAD_SPEED;
             snakeBody_[0].Y += relativeY * snakeVelocity_;
-            River.BoundValues(snakeBody_[0]);
+            snakeBody_[0] = River.BoundValues(snakeBody_[0]);
 
             // Propagate changes in the snake head down the body
             for (int i = snakeBody_.Length - 1; i > 0; i--)
             {
-                snakeBody_[i].X = snakeBody_[i - 1].X * BODY_COEFFICIENT;
-                snakeBody_[i].Y = snakeBody_[i - 1].Y * BODY_COEFFICIENT;
+                snakeBody_[i].X = snakeBody_[i - 1].X;
+                snakeBody_[i].Y = snakeBody_[i - 1].Y;
             }
+        }
+
+        public static float GetBodyThickness(int bodyLength, int index)
+        {
+            return (float)(INITIAL_BODY_THICKNESS * Math.Pow(Math.Log(bodyLength - index) / Math.Log(bodyLength), 1));
         }
 
         public void Draw(GameTime gameTime)
         {
             effect.CurrentTechnique = effect.Techniques["Technique1"];
-            effect.Parameters["World"].SetValue(Matrix.CreateTranslation(new Vector3(0,-1.5f,9)));
+            effect.Parameters["World"].SetValue(Matrix.CreateTranslation(new Vector3(0,0,0)));
             effect.Parameters["View"].SetValue(Game1.View);
             effect.Parameters["Projection"].SetValue(Game1.Projection);
             effect.Parameters["Env"].SetValue(River.caustics);

@@ -7,8 +7,8 @@ namespace GGJ_Deceive
 {
     public class ThingSpawner
     {
-        public const float CHANCE_TO_SPAWN = 0.01f;
-        public const int MAX_OBJECTS = 10;
+        public const float CHANCE_TO_SPAWN = 0.1f;
+        public const int MAX_OBJECTS = 200;
         public const float MAX_ENEMY_CHANCE = 0.75f;
         public const float INCREASING_CHANCE = 0.0001f;
 
@@ -21,31 +21,49 @@ namespace GGJ_Deceive
             things_ = new List<Thing>();
         }
 
+        public void LoadContent()
+        {
+        }
+
+        private static bool RemoveThing(Thing thing)
+        {
+            if (thing.position_.Z > River.segments / 2)
+                return true;
+            else
+                return false;
+        }
+
+
         public void Update()
         {
             // Check the player collisions with things
             foreach (Thing thing in things_)
             {
+                thing.Update();
                 thing.DoesCollides(Game1.snake);
             }
+            things_.RemoveAll(RemoveThing);
 
             Random random = new Random();
             if ((things_.Count < MAX_OBJECTS)
-                && (random.NextDouble() < CHANCE_TO_SPAWN * -Game1.snake.snakeVelocity_))
+                && (random.NextDouble() < CHANCE_TO_SPAWN * (1 + Game1.snake.snakeVelocity_)))
             {
                 // Spawn a thing
+                Thing thing = null;
 
                 // Spawn an enemy
                 if (random.NextDouble() < chanceOfEnemy)
                 {
                     // For now, just use puffer fish. But split the chance between puffer and boat later.
-                    things_.Add(new PufferFish());
+                    thing = new PufferFish();
                 }
                 else
                 {
                     // Spawn a food fish
-                    things_.Add(new Fish());
+                    thing = new Fish();
                 }
+                thing.LoadContent();
+                things_.Add(thing);
             }
 
             if (chanceOfEnemy < MAX_ENEMY_CHANCE)
