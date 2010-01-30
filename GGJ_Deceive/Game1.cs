@@ -77,7 +77,7 @@ namespace GGJ_Deceive
         protected override void Initialize()
         {
          //   Game1.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
-            EventInput.Initialize(this.Window);
+            
             stateMachine.Initialise();
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             base.Initialize();
@@ -106,6 +106,7 @@ namespace GGJ_Deceive
             snake.LoadContent(GraphicsDevice);
             thingSpawner.LoadContent();
             Blood.Initalize();
+            Bubbles.Initalize();
             // TODO: use this.Content to load your game content here
         }
 
@@ -139,7 +140,8 @@ namespace GGJ_Deceive
                 NEAR_PLANE_DIST, 100f);
             stateMachine.Update(gameTime, Window.ClientBounds);
             Blood.Update();
-            overlay.Update();
+            Bubbles.Update();
+overlay.Update();
             base.Update(gameTime);
         }
 

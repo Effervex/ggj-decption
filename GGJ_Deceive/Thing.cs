@@ -26,6 +26,7 @@ namespace GGJ_Deceive
         virtual public void LoadContent()
         {
                 effect = Game1.GetInstance.Content.Load<Effect>("Fish");
+                effect.CurrentTechnique = effect.Techniques["Technique1"];
             // Spawn within the 2x2 area
             // X axis: -1 - 1
             // Y axis: 0 - -2
@@ -71,33 +72,29 @@ namespace GGJ_Deceive
             return -1;
         }
 
-        internal void Draw()
+        public virtual void Draw(Matrix extra, float puff)
         {
-            effect.CurrentTechnique = effect.Techniques["Technique1"];
+            //effect.CurrentTechnique = effect.Techniques["Technique1"];
 
-            Matrix m = Matrix.CreateScale(scale_);
-            if (rotation != 0)
-                m *= Matrix.CreateRotationY(rotation);
-            m *= Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z));
+            //Matrix m = Matrix.CreateScale(scale_);
+            //if (rotation != 0)
+            //    m *= Matrix.CreateRotationY(rotation);
+            //m *= Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z));
 
-            effect.Parameters["World"].SetValue(m);//Matrix.CreateScale(scale_) * Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z)));
-            effect.Parameters["View"].SetValue(Game1.View);
-            effect.Parameters["Projection"].SetValue(Game1.Projection);
+            //effect.Parameters["World"].SetValue(m);//Matrix.CreateScale(scale_) * Matrix.CreateTranslation(new Vector3(position_.X, position_.Y, position_.Z)));
+            //effect.Parameters["View"].SetValue(Game1.View);
+            //effect.Parameters["Projection"].SetValue(Game1.Projection);
 
-            effect.Begin();
+            //effect.Begin();
 
-            foreach (EffectPass p in effect.CurrentTechnique.Passes)
-            {
-                p.Begin();
-                Game1.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(PrimitiveType.TriangleList, vertices_, 0, vertices_.Length, indices_, 0, indices_.Length / 3);
-                p.End();
-            }
+            //foreach (EffectPass p in effect.CurrentTechnique.Passes)
+            //{
+            //    p.Begin();
+            //    Game1.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(PrimitiveType.TriangleList, vertices_, 0, vertices_.Length, indices_, 0, indices_.Length / 3);
+            //    p.End();
+            //}
 
-            effect.End();
+            //effect.End();
         }
-
-        public abstract void SetUpVertices();
-
-        public abstract void SetUpIndices();
     }
 }

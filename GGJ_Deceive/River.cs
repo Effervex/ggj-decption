@@ -171,7 +171,7 @@ namespace GGJ_Deceive
     {
         static public Texture2D caustics;
         List<Debry> debries = new List<Debry>();
-        public const float BOTTOM = -3;
+        public const float BOTTOM = -2.5f;
         public const float BOTTOM_WIDTH = 3;
         public const float TOP_WIDTH = 6;
         public const float BOUNDARY_BUFFER = 0.1f;
