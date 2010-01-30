@@ -67,7 +67,7 @@ namespace GGJ_Deceive
                     snake_.verticalMovement_ = true;
                     river_.Update();
                     snake_.Update(gameTime, clientBounds);
-                    spawner_.Update();
+                    spawner_.Update(gameTime);
                     break;
             }
 

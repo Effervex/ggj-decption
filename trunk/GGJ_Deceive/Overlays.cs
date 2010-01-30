@@ -17,7 +17,7 @@ namespace GGJ_Deceive
         Texture2D bowl;
         Texture2D beef_bar;
 
-        const int bowlCount = 3;
+        public const int bowlCount = 3;
         float time = 0f;
 
         public void LoadContent()
@@ -49,15 +49,13 @@ namespace GGJ_Deceive
                 batch.Draw(bowl, new Vector2(680 + (skull.Width + 5) * i, 50), null, i < Snake.cakeBatterCount ? Color.White : Color.Black, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             }
 
-            int beef_max = 60;
-            int beef_amount = (int)(beef_max * (float)Snake.INITIAL_BODY_THICKNESS);
 
 
             
 
-            for (int i = 0; i < beef_amount; i++)
+            for (int i = 0; i < Snake.beefLevel; i++)
             {
-                float beef_frac = (float)i / (float)beef_max;
+                float beef_frac = (float)i / Snake.MAX_BEEF;
                 byte red = (byte)(255 * MathHelper.Lerp(1, 0, beef_frac));
                 byte green= (byte)(255 * MathHelper.Lerp(0, 1, beef_frac));
 

@@ -13,11 +13,14 @@ namespace GGJ_Deceive
     {
         public const float MAX_HEAD_SPEED = 0.05f;
         public const short VERTICES_PER_SEGMENT = 4;
-        public static float INITIAL_BODY_THICKNESS = 0.1f;
+        public const float SEGMENT_COEFFICIENT = 0.1f;
+        public const float INITIAL_BODY_THICKNESS = 0.045f;
+        public const float BEEF_INCREASE = 0.01f;
         public const float LENGTH_BY_THICKNESS = 10;
         public const float VELOCITY_COEFFICIENT = 0.04f;
         public const float CURVE_COEFFICIENT = 0.15f;
         public const float IDLE_SNAKE_EPSILON = 0.001f;
+        public const int MAX_BEEF = 60;
 
         /** The deviance from the centre of the snake. */
         public Vector3[] snakeBody_;
@@ -28,9 +31,11 @@ namespace GGJ_Deceive
         public MouseState prevState_;
         public Texture2D scales;
         public VertexPositionNormalTexture[] vertices_;
+        public List<Thing> attached_;
         
         public static float healthPercent = 100;
         public static int cakeBatterCount = 0;
+        public static int beefLevel = 1;
 
         public short[] indices_;
 
@@ -39,10 +44,12 @@ namespace GGJ_Deceive
             snakeBody_ = new Vector3[initialSegments];
             for (int i = 0; i < initialSegments; i++)
             {
-                float segmentLength = LENGTH_BY_THICKNESS * INITIAL_BODY_THICKNESS / snakeBody_.Length;
-                float zCoord = River.segments / 2 - LENGTH_BY_THICKNESS * INITIAL_BODY_THICKNESS - Game1.NEAR_PLANE_DIST;
+                float segmentLength = LENGTH_BY_THICKNESS * SEGMENT_COEFFICIENT / snakeBody_.Length;
+                float zCoord = River.segments / 2 - LENGTH_BY_THICKNESS * SEGMENT_COEFFICIENT - Game1.NEAR_PLANE_DIST;
                 snakeBody_[i] = new Vector3(0, River.BOTTOM * .6f, zCoord + i * segmentLength);
             }
+
+            attached_ = new List<Thing>();
         }
 
         public void LoadContent(GraphicsDevice device)
@@ -96,20 +103,19 @@ namespace GGJ_Deceive
             calculateVelocity();
             moveBody(gameTime, windowSize);
             updateVertices();
+            checkCakes();
 
             prevState_ = Mouse.GetState();
         }
 
-        //Vector3 random
-        //{
-        //    get
-        //    {
-
-        //        return new Vector3((float)new Random().NextDouble() - 0.5f,
-        //            (float)new Random().NextDouble() - 0.5f,
-        //            (float)new Random().NextDouble() - 0.5f);
-        //    }
-        //}
+        private void checkCakes()
+        {
+            while (cakeBatterCount >= Overlays.bowlCount)
+            {
+                beefLevel++;
+                cakeBatterCount -= Overlays.bowlCount;
+            }
+        }
 
         private void updateVertices()
         {
@@ -195,7 +201,7 @@ namespace GGJ_Deceive
 
         public static float GetBodyThickness(int bodyLength, int index)
         {
-            return (float)(INITIAL_BODY_THICKNESS * Math.Pow(Math.Log(bodyLength - index) / Math.Log(bodyLength), 1));
+            return (float)((INITIAL_BODY_THICKNESS + beefLevel * BEEF_INCREASE) * Math.Pow(Math.Log(bodyLength - index) / Math.Log(bodyLength), 1));
         }
 
         public void Draw(GameTime gameTime)
