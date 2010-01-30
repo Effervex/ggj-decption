@@ -69,8 +69,8 @@ namespace GGJ_Deceive
     public class River
     {
         public const float BOTTOM = -2;
-        public const float BOTTOM_WIDTH = 2;
-        public const float TOP_WIDTH = 4;
+        public const float BOTTOM_WIDTH = 3;
+        public const float TOP_WIDTH = 6;
         public const float BOUNDARY_BUFFER = 0.1f;
         static float RiverSpeed = 0.015f;
         static float RiverOffset = 0f;
@@ -101,6 +101,7 @@ namespace GGJ_Deceive
 
         public void Update()
         {
+            RiverSpeed = Game1.snake.snakeVelocity_;
             RiverOffset += RiverSpeed;
 
             for (int i = 0; i < treeInstances.Count; i++)
