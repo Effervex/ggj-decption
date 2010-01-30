@@ -29,9 +29,7 @@ namespace GGJ_Deceive
         }
 
         static public void AddBlood(Vector3 position, int count) {
-            if (particles.Count > 100)
-                return;
-            count = 1;
+            
             for(int i = 0; i < count; i++) {
 
                 particles.Add(new VertexPositionNormalTexture(position, 

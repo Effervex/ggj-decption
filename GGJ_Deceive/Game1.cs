@@ -34,6 +34,10 @@ namespace GGJ_Deceive
         public static Overlays overlay;
         public static VertexDeclaration vd;
 
+        static SoundEffect soundEngine;
+        static SoundEffectInstance soundEngineInstance;
+        static SoundEffect soundHyperspaceActivation;
+
         public static new GraphicsDevice GraphicsDevice
         {
 
@@ -84,6 +88,10 @@ namespace GGJ_Deceive
         /// </summary>
         protected override void LoadContent()
         {
+            soundEngine = Content.Load<SoundEffect>("chomp");
+            soundEngineInstance = soundEngine.CreateInstance();
+    
+
             // Create a new SpriteBatch, which can be used to draw textures.
             
             refractBuffer = new RenderTarget2D(Game1.GraphicsDevice,
@@ -119,7 +127,8 @@ namespace GGJ_Deceive
         protected override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
-
+            soundEngineInstance.Volume = 1f;
+            soundEngineInstance.Play();
             // Keep mouse in bounds
             BoundMouse();
 
@@ -151,7 +160,6 @@ namespace GGJ_Deceive
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            Blood.AddBlood(new Vector3(0, -0.5f, 8.5f), 10);
             Game1.GraphicsDevice.VertexDeclaration = vd;
             byte r = 30;
             byte g = 38;
