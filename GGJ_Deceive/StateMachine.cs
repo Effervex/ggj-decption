@@ -12,10 +12,10 @@ namespace GGJ_Deceive
     {
         public const float TITLE_STAY = 5;
         public const float TITLE_FADE = 0.05f;
-        public const int FREEZE_TIME = 3;
+        public const int FREEZE_TIME = 3000;
 
         public Boolean frozen_;
-        public int freezeStart_;
+        public double freezeStart_;
         public State gameState_;
         public float titleOpacity_;
         public MouseState prevState_;
@@ -29,7 +29,8 @@ namespace GGJ_Deceive
             river_ = Game1.river;
             snake_ = Game1.snake;
             spawner_ = Game1.thingSpawner;
-            gameState_ = State.TITLE;
+            // Change this
+            gameState_ = State.NORMAL_GAMEPLAY;
         }
 
         public void Update(GameTime gameTime, Rectangle clientBounds)
@@ -46,25 +47,31 @@ namespace GGJ_Deceive
                     if (!currentState.Equals(prevState_))
                     {
                         gameState_ = State.LEARNING_FORWARD;
-                        freezeStart_ = gameTime.ElapsedGameTime.Seconds;
+                        freezeStart_ = gameTime.TotalRealTime.TotalMilliseconds;
                         frozen_ = true;
                     }
                     break;
                 case State.LEARNING_FORWARD:
                     // Alert the user how to move forward in a frozen state
-                    if (gameTime.ElapsedGameTime.Seconds - freezeStart_ >= FREEZE_TIME)
+                    double gameSeconds = gameTime.TotalRealTime.TotalMilliseconds;
+                    if (gameSeconds - freezeStart_ >= FREEZE_TIME)
                     {
                         frozen_ = false;
-
+                        snake_.horizontalMovement_ = true;
+                        river_.Update();
+                        snake_.Update(gameTime, clientBounds);
                     }
+                    break;
+                case State.NORMAL_GAMEPLAY:
+                    snake_.horizontalMovement_ = true;
+                    snake_.verticalMovement_ = true;
+                    river_.Update();
+                    snake_.Update(gameTime, clientBounds);
                     break;
             }
 
             if (!gameState_.Equals(State.TITLE))
                 titleOpacity_ -= TITLE_FADE;
-
-            river_.Update();
-            snake_.Update(gameTime, clientBounds);
 
             prevState_ = Mouse.GetState();
         }
@@ -85,11 +92,23 @@ namespace GGJ_Deceive
             snake_.Draw(gameTime);
             
             // Draw any helpful text
+            if (frozen_)
+            {
+                if (gameState_.Equals(State.LEARNING_FORWARD))
+                {
+                }
+            }
 
             // Draw the title
             if (titleOpacity_ > 0)
             {
+                DrawTitle();
             }
+        }
+
+        private void DrawTitle()
+        {
+            
         }
     }
 

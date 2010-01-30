@@ -19,7 +19,7 @@ namespace GGJ_Deceive
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        public static SpriteBatch spriteBatch;
 
         //Game Objects
         public static River river;
@@ -30,7 +30,6 @@ namespace GGJ_Deceive
         public static Matrix Projection;
 
         public static RenderTarget2D refractBuffer;
-
 
         public static VertexDeclaration vd;
 
@@ -54,7 +53,7 @@ namespace GGJ_Deceive
         public Game1()
         {
             river = new River();
-            snake = new Snake(20);
+            snake = new Snake(30);
             thingSpawner = new ThingSpawner();
             stateMachine = new StateMachine();
             graphics = new GraphicsDeviceManager(this);
@@ -73,6 +72,7 @@ namespace GGJ_Deceive
         {
          //   Game1.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
             stateMachine.Initialise();
+            Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             base.Initialize();
         }
 
@@ -113,6 +113,11 @@ namespace GGJ_Deceive
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
+
+            // Keep mouse in bounds
+            BoundMouse();
+
             View = Matrix.CreateLookAt(new Vector3(0, -1f, 10), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
             Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(130f),
                 graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
@@ -120,6 +125,16 @@ namespace GGJ_Deceive
             stateMachine.Update(gameTime, Window.ClientBounds);
             
             base.Update(gameTime);
+        }
+
+        private void BoundMouse()
+        {
+            int mouseX = Mouse.GetState().X;
+            int mouseY = Mouse.GetState().Y;
+
+            mouseX = (int) MathHelper.Clamp(mouseX, 0, Window.ClientBounds.Width);
+            mouseY = (int) MathHelper.Clamp(mouseY, 0, Window.ClientBounds.Height);
+            Mouse.SetPosition(mouseX, mouseY);
         }
         
         public static Vector4 fog = new Vector4(.73f, .59f, .63f, 1f);
