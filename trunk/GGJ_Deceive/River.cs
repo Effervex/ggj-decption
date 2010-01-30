@@ -503,8 +503,8 @@ RiverOffset += RiverSpeed;
 
             background_vertices = new VertexPositionNormalTexture[4];
             background_vertices[0] = new VertexPositionNormalTexture(new Vector3(-35, -15, -3), Vector3.Zero, new Vector2(0, 1));
-            background_vertices[1] = new VertexPositionNormalTexture(new Vector3(-35, 35, -3), Vector3.Zero, new Vector2(0, 0));
-            background_vertices[2] = new VertexPositionNormalTexture(new Vector3(35, 35, -3), Vector3.Zero, new Vector2(1, 0));
+            background_vertices[1] = new VertexPositionNormalTexture(new Vector3(-35, 40, -3), Vector3.Zero, new Vector2(0, 0));
+            background_vertices[2] = new VertexPositionNormalTexture(new Vector3(35, 40, -3), Vector3.Zero, new Vector2(1, 0));
             background_vertices[3] = new VertexPositionNormalTexture(new Vector3(35, -15, -3), Vector3.Zero, new Vector2(1, 1));
 
         }

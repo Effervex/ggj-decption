@@ -85,7 +85,7 @@ namespace GGJ_Deceive
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-
+            
             refractBuffer = new RenderTarget2D(Game1.GraphicsDevice,
                 Game1.GraphicsDevice.Viewport.Width,
                 Game1.GraphicsDevice.Viewport.Height, 1, SurfaceFormat.Color);
@@ -96,6 +96,7 @@ namespace GGJ_Deceive
             river.Create();
             snake.LoadContent(GraphicsDevice);
             thingSpawner.LoadContent();
+            Blood.Initalize();
             // TODO: use this.Content to load your game content here
         }
 
@@ -127,7 +128,7 @@ namespace GGJ_Deceive
                 graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
                 NEAR_PLANE_DIST, 100f);
             stateMachine.Update(gameTime, Window.ClientBounds);
-
+            Blood.Update();
             overlay.Update();
             base.Update(gameTime);
         }
@@ -150,6 +151,7 @@ namespace GGJ_Deceive
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            Blood.AddBlood(new Vector3(0, -0.5f, 8.5f), 10);
             Game1.GraphicsDevice.VertexDeclaration = vd;
             byte r = 30;
             byte g = 38;

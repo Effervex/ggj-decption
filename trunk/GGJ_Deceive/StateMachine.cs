@@ -90,8 +90,8 @@ namespace GGJ_Deceive
             
             river_.Draw();
             spawner_.Draw();
+            Blood.Draw();
             snake_.Draw(gameTime);
-            
             
             Game1.overlay.DrawHUD();
             // Draw any helpful text
