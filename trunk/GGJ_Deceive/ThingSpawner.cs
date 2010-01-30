@@ -10,10 +10,11 @@ namespace GGJ_Deceive
     {
         public const float CHANCE_TO_SPAWN = 0.05f;
         public const int MAX_OBJECTS = 200;
-        public const float MAX_ENEMY_CHANCE = 0.75f;
+        public const float MAX_ENEMY_CHANCE = 0.5f;
         public const float INCREASING_CHANCE = 0.0001f;
+        public const float INITIAL_CHANCE_OF_ENEMY = 0.1f;
 
-        public float chanceOfEnemy = 0.2f;
+        public float chanceOfEnemy = INITIAL_CHANCE_OF_ENEMY;
 
         public List<Thing> things_;
 

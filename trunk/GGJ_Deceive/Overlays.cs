@@ -36,7 +36,7 @@ namespace GGJ_Deceive
             batch.Draw(HUD, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
             
             time += 0.1f;
-            float healthFrac = (Snake.healthPercent / 100f);
+            float healthFrac = (Snake.healthPercent / (float) Snake.MAX_HEALTH);
 
             for (int i = 0; i < 3; i++)
             {
@@ -80,6 +80,7 @@ namespace GGJ_Deceive
 
         public void WriteText(State imageState)
         {
+            
             switch (imageState)
             {
                 case State.LEARNING_FORWARD:
@@ -97,6 +98,15 @@ namespace GGJ_Deceive
                     break;
                 case State.NORMAL_GAMEPLAY:
                     //"Fill your belly with cake and grow beefy!"
+                    break;
+                case State.TRY_AGAIN:
+                    //"Try again (Y/N)?"
+                    break;
+                case State.FISH_BITE:
+                    //"Oh no! A fish has you! Shake vigourously to flick it off"
+                    break;
+                case State.GAME_OVER:
+                    //"Farewell, brave snake"
                     break;
             }
         }
