@@ -21,6 +21,7 @@ namespace GGJ_Deceive
         public const float CURVE_COEFFICIENT = 0.15f;
         public const float IDLE_SNAKE_EPSILON = 0.001f;
         public const int MAX_BEEF = 60;
+        public const int SHAKE_CONST = 9;
 
         /** The deviance from the centre of the snake. */
         public Vector3[] snakeBody_;
@@ -170,8 +171,15 @@ namespace GGJ_Deceive
                 prevDiff = diff;
             }
 
-            // Modify the absolute sum
-            //absSum = (float) Math.Pow(absSum + 1, 1 + curves * CURVE_COEFFICIENT) - 1;
+            // Shake fish off if there are enough curves
+            if (curves >= SHAKE_CONST)
+            {
+                foreach (Thing attach in attached_)
+                {
+                    ((PufferFish) attach).Loose();
+                }
+                attached_.Clear();
+            }
 
             snakeVelocity_ = absSum * VELOCITY_COEFFICIENT;
         }
@@ -186,6 +194,11 @@ namespace GGJ_Deceive
             relativeX = Math.Min(relativeX, 1);
             relativeY = Math.Max(relativeY, -1);
             relativeY = Math.Min(relativeY, 1);
+
+            if (!horizontalMovement_)
+                relativeX = 0;
+            if (!verticalMovement_)
+                relativeY = 0;
 
             snakeBody_[0].X += relativeX * MAX_HEAD_SPEED;
             snakeBody_[0].Y += relativeY * snakeVelocity_;

@@ -17,6 +17,9 @@ namespace GGJ_Deceive
 
         public List<Thing> things_;
 
+        public bool spawnFish = false;
+        public bool spawnPufferFish = false;
+
         public ThingSpawner()
         {
             things_ = new List<Thing>();
@@ -52,12 +55,17 @@ namespace GGJ_Deceive
 
             Random random = River.random;
             if ((things_.Count < MAX_OBJECTS)
-                && (random.NextDouble() < CHANCE_TO_SPAWN * (1 + Game1.snake.snakeVelocity_)))
+                && (random.NextDouble() < CHANCE_TO_SPAWN * (1 + Game1.snake.snakeVelocity_)) && (spawnFish || spawnPufferFish))
             {
                 // Spawn a thing
                 Thing thing = null;
 
                 // Spawn an enemy
+                float enemyChance = chanceOfEnemy;
+                if (!spawnFish)
+                    enemyChance = 1;
+                if (!spawnPufferFish)
+                    enemyChance = 0;
                 if (random.NextDouble() < chanceOfEnemy)
                 {
                     // For now, just use puffer fish. But split the chance between puffer and boat later.
@@ -72,8 +80,11 @@ namespace GGJ_Deceive
                 things_.Add(thing);
             }
 
-            if (chanceOfEnemy < MAX_ENEMY_CHANCE)
-                chanceOfEnemy += INCREASING_CHANCE;
+            if (spawnPufferFish && spawnFish)
+            {
+                if (chanceOfEnemy < MAX_ENEMY_CHANCE)
+                    chanceOfEnemy += INCREASING_CHANCE;
+            }
         }
 
         public void Draw()

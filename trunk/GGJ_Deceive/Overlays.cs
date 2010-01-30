@@ -30,7 +30,7 @@ namespace GGJ_Deceive
             beef_bar = Game1.GetInstance.Content.Load<Texture2D>("beef_bar");
         }
 
-        public void DrawHUD()
+        public void DrawHUD(State gameState)
         {
             batch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.BackToFront, SaveStateMode.SaveState);
             batch.Draw(HUD, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
@@ -40,7 +40,7 @@ namespace GGJ_Deceive
 
             for (int i = 0; i < 3; i++)
             {
-                float lerp = MathHelper.Lerp(0, 1, MathHelper.Clamp(healthFrac - ((float)i / 3f), 1, 0));
+                float lerp = MathHelper.Clamp((healthFrac - (i / 3f)) * 3, 0, 1);
                 batch.Draw(skull, new Vector2(680 + (skull.Width + 5) * i, 12), null, new Color(255, (byte)(lerp * 255), (byte)(lerp * 255), 255)  , 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             }
 
@@ -61,6 +61,9 @@ namespace GGJ_Deceive
 
                 batch.Draw(beef_bar, new Vector2(530 + (beef_bar.Width * i), 555), null, new Color(red, green, 0), 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             }
+
+            if (gameState != State.NOTHING)
+                WriteText(gameState);
             
             batch.End();
         }
@@ -73,6 +76,29 @@ namespace GGJ_Deceive
         {
             batch.Dispose();
             HUD.Dispose();
+        }
+
+        public void WriteText(State imageState)
+        {
+            switch (imageState)
+            {
+                case State.LEARNING_FORWARD:
+                    //"To move forward, slither the mouse left and right"
+                    break;
+                case State.LEARNING_UPDOWN:
+                    //"To ascend/descend, move mouse up/down while slithering"
+                    break;
+                case State.FISH_ENCOUNTERED:
+                    //"A fish approaches! Gobble it up for some cake batter!"
+                    break;
+                case State.ENEMY_ENCOUNTERED:
+                    //"Careful. Dangerous puffer-fish masquerade as regular ones until they are close"
+                    //"Shake furiously to dislodge attached puffer fish"
+                    break;
+                case State.NORMAL_GAMEPLAY:
+                    //"Fill your belly with cake and grow beefy!"
+                    break;
+            }
         }
     }
 }
