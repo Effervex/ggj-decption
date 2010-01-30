@@ -91,6 +91,8 @@ namespace GGJ_Deceive
             spawner_.Draw();
             snake_.Draw(gameTime);
             
+            
+            Game1.overlay.DrawHUD();
             // Draw any helpful text
             if (frozen_)
             {
