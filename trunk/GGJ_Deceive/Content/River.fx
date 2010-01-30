@@ -5,10 +5,18 @@ float4x4 Projection;
 uniform extern texture FloorTexture;
 uniform extern texture TreeTexture;
 uniform extern texture SceneTexture;
+uniform extern texture CausticsTexture;
 
 sampler FloorSampler = sampler_state
 {
     Texture = <FloorTexture>;
+    minfilter = LINEAR;
+    magfilter = LINEAR;
+    mipfilter = LINEAR; 
+};
+sampler CausticsSampler = sampler_state
+{
+    Texture = <CausticsTexture>;
     minfilter = LINEAR;
     magfilter = LINEAR;
     mipfilter = LINEAR; 
@@ -62,7 +70,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     return output;
 }
 float4 fogcolor = float4(0,0,0,1);
-
+float time = 0.0f;
 float4 DoFog(float4 lastColor, float4 homPos) {
 
 	float4 tmp = lerp(lastColor,fogcolor, clamp(homPos.z / 30*homPos.w,0.085,1));
@@ -70,18 +78,24 @@ float4 DoFog(float4 lastColor, float4 homPos) {
 	return tmp;
 }
 
-float4 lighting(float3 wp, float3 normal) {
- return float4(1,1,1,1);
-	
+
+float riverOffset = 0;
+
+float4 DoCaustics(float2 coord) {
+coord*=.75;
+ float2 move = float2(0,time);
+	return lerp(tex2D(CausticsSampler, move + coord),tex2D(CausticsSampler, move*0.7 +coord*.5) , sin(100*time) * .5 + .5);
 }
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-	float3 lightPos = float3(0,0,2);
+float causticAmount = clamp(3.5+ input.WorldPos.y * 2,0,1);
+	float4 caustics = lerp(DoCaustics(input.WorldPos.xz - float2(0,riverOffset)) * 2.5,1, causticAmount);
+	
 	float3 color = tex2D(FloorSampler, input.Texcoord).rgb;
 	float3 normal = normalize((color - 0.5) * 2);
 
-	float4 lastColor = float4( color, 1) * lighting(input.WorldPos ,input.Normal + normal * .1);
+	float4 lastColor = caustics* float4( color, 1);
     return DoFog(lastColor, input.HomPos);
 }
 
@@ -93,14 +107,13 @@ technique Technique1
         PixelShader = compile ps_2_0 PixelShaderFunction();
     }
 }
-float riverOffset = 0;
 
 float4 WaterShaderFunction(VertexShaderOutput input) : COLOR0
 {
 float edge = lerp(0,.1,sin((input.HomPos.x * 2)  + 1.54));
 
 	float3 lightPos = float3(0,0,2);
-	float3 refractColor = tex2D(FloorSampler, input.Texcoord * .25+ float2(0,-.1*riverOffset) ).rgb;
+	float3 refractColor = tex2D(FloorSampler, input.Texcoord * .25+ float2(0,-.1*riverOffset + time) ).rgb;
 	float3 normal = normalize((refractColor - 0.5) * 2);
 	float2 offset = refractColor.xy * edge;
 input.HomPos.y *= -1;
@@ -153,3 +166,55 @@ technique Technique4
         PixelShader = compile ps_2_0 BackgroundShaderFunction();
     }
 }
+
+/////////////
+
+uniform extern texture DebryTexture;
+struct PS_INPUT
+{
+	float4 HomPos : TEXCOORD1;
+	float4 WPos : TEXCOORD2;
+       float2 TexCoord : TEXCOORD0;
+    
+};
+uniform extern float4x4 WVPMatrix;
+
+
+
+sampler DebrySampler = sampler_state
+{
+	Texture = <DebryTexture>;
+};						
+float4 PixelShader(PS_INPUT input) : COLOR0
+{
+    float2 texCoord;
+
+    texCoord = input.TexCoord.xy;
+    float4 color  = tex2D(DebrySampler, texCoord);
+    color.w = min(color.w, .5+input.WPos.y);
+ return DoFog(color, input.HomPos);
+    //return tex2D(DebrySampler, texCoord);
+}
+
+void VertexShader(float4 pos : POSITION0, 
+float2 aux : TEXCOORD0,
+	out float4 opos : POSITION0, 
+	out float4 HomPos : TEXCOORD1,
+	out float4 WPos : TEXCOORD2, 
+	out float rad : PSIZE) 
+{
+WPos = pos;
+	opos = mul(pos, WVPMatrix);
+	HomPos = opos;
+	rad = aux.x;// 
+	rad = (31 + aux.x + opos.z) / opos.w;
+}
+
+technique Debry
+{
+	pass P0
+	{
+		vertexShader = compile vs_2_0 VertexShader();
+		pixelShader = compile ps_2_0 PixelShader();
+	}
+}    

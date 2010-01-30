@@ -19,7 +19,6 @@ namespace GGJ_Deceive
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
-        public static SpriteBatch spriteBatch;
 
         //Game Objects
         public static River river;
@@ -30,7 +29,7 @@ namespace GGJ_Deceive
         public static Matrix Projection;
 
         public static RenderTarget2D refractBuffer;
-
+        public static Overlays overlay;
         public static VertexDeclaration vd;
 
         public static new GraphicsDevice GraphicsDevice
@@ -52,6 +51,7 @@ namespace GGJ_Deceive
 
         public Game1()
         {
+            overlay = new Overlays();
             river = new River();
             snake = new Snake(30);
             thingSpawner = new ThingSpawner();
@@ -88,9 +88,9 @@ namespace GGJ_Deceive
                 Game1.GraphicsDevice.Viewport.Width,
                 Game1.GraphicsDevice.Viewport.Height, 1, SurfaceFormat.Color);
             
-            spriteBatch = new SpriteBatch(GraphicsDevice);
             vd = new VertexDeclaration(Game1.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
-            
+
+            overlay.LoadContent();
             river.Create();
             snake.LoadContent(GraphicsDevice);
             // TODO: use this.Content to load your game content here
@@ -103,6 +103,7 @@ namespace GGJ_Deceive
         protected override void UnloadContent()
         {
             river.Release();
+            overlay.Release();
             // TODO: Unload any non ContentManager content here
         }
 
@@ -123,7 +124,8 @@ namespace GGJ_Deceive
                 graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height,
                 0.1f, 100f);
             stateMachine.Update(gameTime, Window.ClientBounds);
-            
+
+            overlay.Update();
             base.Update(gameTime);
         }
 
@@ -152,6 +154,7 @@ namespace GGJ_Deceive
 
             fog = new Vector4(r / 255f, g / 255f, b / 255f, 1f);
             stateMachine.Draw(gameTime);
+          
             base.Draw(gameTime);
         }
     }

@@ -14,7 +14,7 @@ namespace GGJ_Deceive
         public const float BODY_COEFFICIENT = 1f;
         public const float MAX_HEAD_SPEED = 0.05f;
         public const short VERTICES_PER_SEGMENT = 4;
-        public const float INITIAL_BODY_THICKNESS = 0.08f;
+        public static float INITIAL_BODY_THICKNESS = 0.1f;
         public const float LENGTH_BY_THICKNESS = 10;
         public const float VELOCITY_COEFFICIENT = 0.03f;
         public const float CURVE_COEFFICIENT = 0.15f;
@@ -27,8 +27,12 @@ namespace GGJ_Deceive
         public bool verticalMovement_ = false;
         public Effect effect;
         public MouseState prevState_;
+        public Texture2D scales;
+        public VertexPositionNormalTexture[] vertices_;
+        
+        public static float healthPercent = 100;
+        public static int cakeBatterCount = 0;
 
-        public VertexPositionColor[] vertices_;
         public short[] indices_;
 
         public Snake(int initialSegments)
@@ -44,7 +48,7 @@ namespace GGJ_Deceive
         {
             SetUpVertices();
             SetUpIndices();
-
+            scales = Game1.GetInstance.Content.Load<Texture2D>("Scales");
             effect = Game1.GetInstance.Content.Load<Effect>("Snake");
         }
 
@@ -78,7 +82,7 @@ namespace GGJ_Deceive
 
         private void SetUpVertices()
         {
-                vertices_ = new VertexPositionColor[snakeBody_.Length * VERTICES_PER_SEGMENT];
+            vertices_ = new VertexPositionNormalTexture[snakeBody_.Length * VERTICES_PER_SEGMENT];
 
                 // Form the head
 
@@ -95,24 +99,42 @@ namespace GGJ_Deceive
             prevState_ = Mouse.GetState();
         }
 
+        //Vector3 random
+        //{
+        //    get
+        //    {
+
+        //        return new Vector3((float)new Random().NextDouble() - 0.5f,
+        //            (float)new Random().NextDouble() - 0.5f,
+        //            (float)new Random().NextDouble() - 0.5f);
+        //    }
+        //}
+
         private void updateVertices()
         {
             float segmentLength = LENGTH_BY_THICKNESS * INITIAL_BODY_THICKNESS / snakeBody_.Length;
             for (int i = 0; i < snakeBody_.Length; i++)
             {
+                float stripe = (i % 2 == 0) ? 0 : 1;
+                float alongFrac = MathHelper.Clamp(1f - (float)i / (float)snakeBody_.Length,0.1f,1.0f);
+                
                 float bodySize = (float) (INITIAL_BODY_THICKNESS * Math.Pow(Math.Log(snakeBody_.Length - i) / Math.Log(snakeBody_.Length), 1));
                 vertices_[i * VERTICES_PER_SEGMENT] =
-                    new VertexPositionColor(new Vector3(snakeBody_[i].X, snakeBody_[i].Y + bodySize / 2, i * segmentLength),
-                        Color.Red);
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X, snakeBody_[i].Y + bodySize / 2, i * segmentLength),
+                        Vector3.UnitY,
+                        new Vector2(alongFrac, stripe));
                 vertices_[i * VERTICES_PER_SEGMENT + 1] =
-                    new VertexPositionColor(new Vector3(snakeBody_[i].X - bodySize / 2, snakeBody_[i].Y, i * segmentLength),
-                        Color.Red);
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X - bodySize / 2, snakeBody_[i].Y, i * segmentLength),
+                        -Vector3.UnitX,
+                       new Vector2(alongFrac, stripe));
                 vertices_[i * VERTICES_PER_SEGMENT + 2] =
-                    new VertexPositionColor(new Vector3(snakeBody_[i].X, snakeBody_[i].Y - bodySize / 2f, i * segmentLength),
-                        Color.Red);
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X, snakeBody_[i].Y - bodySize / 2f, i * segmentLength),
+                        -Vector3.UnitY,
+                        new Vector2(alongFrac, stripe));
                 vertices_[i * VERTICES_PER_SEGMENT + 3] =
-                    new VertexPositionColor(new Vector3(snakeBody_[i].X + bodySize / 2, snakeBody_[i].Y, i * segmentLength),
-                        Color.Red);
+                    new VertexPositionNormalTexture(new Vector3(snakeBody_[i].X + bodySize / 2, snakeBody_[i].Y, i * segmentLength),
+                       Vector3.UnitX,
+                       new Vector2(alongFrac, stripe));
                 bodySize -= 0.002f;
             }
         }
@@ -178,18 +200,21 @@ namespace GGJ_Deceive
             effect.Parameters["World"].SetValue(Matrix.CreateTranslation(new Vector3(0,-1.5f,9)));
             effect.Parameters["View"].SetValue(Game1.View);
             effect.Parameters["Projection"].SetValue(Game1.Projection);
-            
+            effect.Parameters["Env"].SetValue(River.caustics);
+            effect.Parameters["ScalesTexture"].SetValue(scales);
+            effect.Parameters["Time"].SetValue(River.time);
+
             effect.Begin();
 
             foreach (EffectPass p in effect.CurrentTechnique.Passes)
             {
                 p.Begin();
-                Game1.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(PrimitiveType.TriangleList, vertices_, 0, vertices_.Length, indices_, 0, indices_.Length / 3);
+                Game1.GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionNormalTexture>(PrimitiveType.TriangleList, vertices_, 0, vertices_.Length, indices_, 0, indices_.Length / 3);
                 p.End();
             }
 
             effect.End();
-
+            Game1.GraphicsDevice.VertexDeclaration = Game1.vd;
 
         }
     }
