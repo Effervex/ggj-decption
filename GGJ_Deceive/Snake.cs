@@ -21,7 +21,8 @@ namespace GGJ_Deceive
         public const float CURVE_COEFFICIENT = 0.15f;
         public const float IDLE_SNAKE_EPSILON = 0.001f;
         public const int MAX_BEEF = 60;
-        public const int SHAKE_CONST = 9;
+        public const int SHAKE_CONST = 7;
+        public const int MAX_HEALTH = 100;
 
         /** The deviance from the centre of the snake. */
         public Vector3[] snakeBody_;
@@ -34,7 +35,7 @@ namespace GGJ_Deceive
         public VertexPositionNormalTexture[] vertices_;
         public List<Thing> attached_;
         
-        public static float healthPercent = 100;
+        public static float healthPercent = MAX_HEALTH;
         public static int cakeBatterCount = 0;
         public static int beefLevel = 1;
 
@@ -147,41 +148,48 @@ namespace GGJ_Deceive
 
         private void calculateVelocity()
         {
-            float absSum = 0;
-            int curves = 0;
-            float prevDiff = 0;
-            float straightFactor = 1;
-            for (int i = 1; i < snakeBody_.Length; i++)
+            if (healthPercent > 0)
             {
-                float thisX = snakeBody_[i].X;
-                float prevX = snakeBody_[i - 1].X;
-                float diff = thisX - prevX;
-                // If the curves go a different direction add a curve
-                if (diff * prevDiff < 0)
+                float absSum = 0;
+                int curves = 0;
+                float prevDiff = 0;
+                float straightFactor = 1;
+                for (int i = 1; i < snakeBody_.Length; i++)
                 {
-                    curves++;
-                    straightFactor = 1 + CURVE_COEFFICIENT;
-                }
-                else
-                {
-                    straightFactor -= 2f / snakeBody_.Length;
+                    float thisX = snakeBody_[i].X;
+                    float prevX = snakeBody_[i - 1].X;
+                    float diff = thisX - prevX;
+                    // If the curves go a different direction add a curve
+                    if (diff * prevDiff < 0)
+                    {
+                        curves++;
+                        straightFactor = 1 + CURVE_COEFFICIENT;
+                    }
+                    else
+                    {
+                        straightFactor -= 2f / snakeBody_.Length;
+                    }
+
+                    absSum += Math.Abs(diff * straightFactor);
+                    prevDiff = diff;
                 }
 
-                absSum += Math.Abs(diff * straightFactor);
-                prevDiff = diff;
+                // Shake fish off if there are enough curves
+                if (curves >= SHAKE_CONST)
+                {
+                    foreach (Thing attach in attached_)
+                    {
+                        ((PufferFish)attach).Loose();
+                    }
+                    attached_.Clear();
+                }
+
+                snakeVelocity_ = absSum * VELOCITY_COEFFICIENT;
             }
-
-            // Shake fish off if there are enough curves
-            if (curves >= SHAKE_CONST)
+            else
             {
-                foreach (Thing attach in attached_)
-                {
-                    ((PufferFish) attach).Loose();
-                }
-                attached_.Clear();
+                snakeVelocity_ = 0;
             }
-
-            snakeVelocity_ = absSum * VELOCITY_COEFFICIENT;
         }
 
         private void moveBody(GameTime gameTime, Rectangle windowSize)
@@ -200,8 +208,16 @@ namespace GGJ_Deceive
             if (!verticalMovement_)
                 relativeY = 0;
 
-            snakeBody_[0].X += relativeX * MAX_HEAD_SPEED;
-            snakeBody_[0].Y += relativeY * snakeVelocity_;
+
+            if (healthPercent <= 0)
+            {
+                snakeBody_[0].X += (float) ((River.random.NextDouble() - 0.5) * 0.005);
+                snakeBody_[0].Y -= 0.01f;
+            } else
+            {
+                snakeBody_[0].X += relativeX * MAX_HEAD_SPEED;
+                snakeBody_[0].Y += relativeY * snakeVelocity_;
+            }
             snakeBody_[0] = River.BoundValues(snakeBody_[0]);
 
             // Propagate changes in the snake head down the body

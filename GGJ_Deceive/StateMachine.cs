@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -16,10 +17,13 @@ namespace GGJ_Deceive
         public const float FORWARD_NEXT = 5;
         public const float VERTICAL_NEXT = 5f;
 
+        public const int HIGH_SCORES = 5;
+
         public Boolean frozen_;
         public double freezeStart_;
         public State gameState_;
-        public MouseState prevState_;
+        public State prevState_;
+        public MouseState prevMouse_;
 
         private River river_;
         private Snake snake_;
@@ -31,6 +35,11 @@ namespace GGJ_Deceive
         public bool displayEatFish = false;
         public bool displayEnemyFish = false;
         public bool displayGameGoal = false;
+        public bool displayGameOver = false;
+        public bool displayFishBite = false;
+        public bool displayEnterName = false;
+        public bool displayTryAgain = false;
+        public bool alertBite = false;
         public bool resetYet = false;
         public float forwardMovement = 0;
         public float verticalMovement = 0;
@@ -43,6 +52,7 @@ namespace GGJ_Deceive
             spawner_ = Game1.thingSpawner;
             overlays_ = Game1.overlay;
             gameState_ = State.NORMAL_GAMEPLAY;
+            alertBite = true;
         }
 
         public void Update(GameTime gameTime, Rectangle clientBounds)
@@ -54,13 +64,14 @@ namespace GGJ_Deceive
             {
                 case State.TITLE:
                     // Advance by moving mouse
-                    if (!currentState.Equals(prevState_))
+                    if (!currentState.Equals(prevMouse_))
                     {
                         gameState_ = State.LEARNING_FORWARD;
                         freezeStart_ = gameTime.TotalRealTime.TotalMilliseconds;
                         snake_.verticalMovement_ = false;
                         spawner_.spawnFish = false;
                         spawner_.spawnPufferFish = false;
+                        alertBite = true;
                     }
                     break;
                 case State.LEARNING_FORWARD:
@@ -201,19 +212,83 @@ namespace GGJ_Deceive
                         spawner_.spawnFish = true;
                         spawner_.spawnPufferFish = true;
                         Snake.beefLevel = 1;
-                        Snake.healthPercent = 100;
+                        Snake.healthPercent = Snake.MAX_HEALTH;
                         Snake.cakeBatterCount = 0;
-                        spawner_.chanceOfEnemy = 0.2f;
+                        spawner_.chanceOfEnemy = ThingSpawner.INITIAL_CHANCE_OF_ENEMY;
                         resetYet = true;
                     }
 
                     river_.Update();
                     snake_.Update(gameTime, clientBounds);
                     spawner_.Update(gameTime);
+
+                    if (Snake.healthPercent <= 0)
+                    {
+                        gameState_ = State.GAME_OVER;
+                        displayGameGoal = false;
+                        freezeStart_ = gameSeconds;
+                    }
+                    break;
+                case State.FISH_BITE:
+                    gameSeconds = gameTime.TotalRealTime.TotalMilliseconds;
+                    if (gameSeconds - freezeStart_ <= FREEZE_TIME)
+                        displayFishBite = true;
+                    else
+                    {
+                        displayFishBite = false;
+                        river_.Update();
+                        snake_.Update(gameTime, clientBounds);
+                        spawner_.Update(gameTime);
+
+                        if (snake_.attached_.Count == 0)
+                        {
+                            gameState_ = prevState_;
+                        }
+                    }
+                    break;
+                case State.GAME_OVER:
+                    gameSeconds = gameTime.TotalRealTime.TotalMilliseconds;
+                    if (gameSeconds - freezeStart_ <= FREEZE_TIME)
+                        displayGameOver = true;
+                    else
+                    {
+                        gameState_ = State.TRY_AGAIN;
+                        displayGameOver = false;
+                    }
+
+                    snake_.horizontalMovement_ = false;
+                    river_.Update();
+                    snake_.Update(gameTime, clientBounds);
+                    spawner_.Update(gameTime);
+                    break;
+                case State.TRY_AGAIN:
+                    displayTryAgain = true;
+
+                    if (Keyboard.GetState().IsKeyDown(Keys.Y))
+                    {
+                        resetYet = false;
+                        gameState_ = State.NORMAL_GAMEPLAY;
+                    }
+                    else if (Keyboard.GetState().IsKeyDown(Keys.N))
+                    {
+                        Game1.GetInstance.Exit();
+                    }
                     break;
             }
 
-            prevState_ = Mouse.GetState();
+            // If the player is bitten, switch to FISH_BITE state
+            if (alertBite && snake_.attached_.Count > 0)
+            {
+                prevState_ = gameState_;
+                gameState_ = State.FISH_BITE;
+                alertBite = false;
+
+                displayGameGoal = false;
+                displayEnemyFish = false;
+                freezeStart_ = gameTime.TotalRealTime.TotalMilliseconds;
+            }
+
+            prevMouse_ = Mouse.GetState();
         }
 
         public void Draw(GameTime gameTime)
@@ -235,6 +310,20 @@ namespace GGJ_Deceive
             State outState = State.NOTHING;
             if (displayMoveForward)
                 outState = State.LEARNING_FORWARD;
+            else if (displayMoveVertical)
+                outState = State.LEARNING_UPDOWN;
+            else if (displayEatFish)
+                outState = State.FISH_ENCOUNTERED;
+            else if (displayEnemyFish)
+                outState = State.ENEMY_ENCOUNTERED;
+            else if (displayFishBite)
+                outState = State.FISH_BITE;
+            else if (displayGameGoal)
+                outState = State.NORMAL_GAMEPLAY;
+            else if (displayGameOver)
+                outState = State.GAME_OVER;
+            else if (displayTryAgain)
+                outState = State.TRY_AGAIN;
             
             overlays_.DrawHUD(outState);
         }
@@ -246,11 +335,11 @@ namespace GGJ_Deceive
         LEARNING_FORWARD,
         LEARNING_UPDOWN,
         FISH_ENCOUNTERED,
-        EATING_FISH,
-        ENEMY_APPROACH,
         ENEMY_ENCOUNTERED,
         NORMAL_GAMEPLAY,
+        FISH_BITE,
         GAME_OVER,
+        TRY_AGAIN,
         NOTHING
     }
 }

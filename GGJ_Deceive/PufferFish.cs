@@ -10,7 +10,7 @@ namespace GGJ_Deceive
     {
         public const float PUFF_DISTANCE = 4f;
         public const float INITIAL_LOSS = 1f;
-        public const float HEALTH_LOSS = 0.1f;
+        public const float HEALTH_LOSS = 0.05f;
 
         public Boolean isPuffed_;
 
@@ -61,7 +61,7 @@ namespace GGJ_Deceive
                 scale_.X *= 4;
 
                 // Set the velocity for the snake head
-                velocity_ = (Game1.snake.snakeBody_[0] - position_) / dist;
+                velocity_ = (Game1.snake.snakeBody_[0] - position_ - new Vector3(0,0,-dist / 2)) / dist;
                 velocity_ *= (float) (MIN_VELOCITY + random_.NextDouble() * VELOCITY_RANGE);
                 isPuffed_ = true;
             }

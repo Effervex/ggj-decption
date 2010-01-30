@@ -56,7 +56,7 @@ namespace GGJ_Deceive
         }
 
         public Game1()
-        {
+        {      
             overlay = new Overlays();
             river = new River();
             snake = new Snake(40);
@@ -77,6 +77,7 @@ namespace GGJ_Deceive
         protected override void Initialize()
         {
          //   Game1.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
+            EventInput.Initialize(this.Window);
             stateMachine.Initialise();
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             base.Initialize();
