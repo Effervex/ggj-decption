@@ -89,10 +89,11 @@ namespace GGJ_Deceive
             {
                 if (edible_)
                 {
-                    Blood.AddBlood(position_, River.random.Next(265, 395));
+                    Blood.AddBlood(position_, River.random.Next(65, 195));
                     Bubbles.AddBubbles(position_, 220);
                     // Insert eating code here.
                     Snake.cakeBatterCount++;
+                    Game1.chompInstance.Play();
                     
                     removeThis = true;
                 }

@@ -212,7 +212,7 @@ namespace GGJ_Deceive
                         spawner_.spawnFish = true;
                         spawner_.spawnPufferFish = true;
                         Snake.beefLevel = 1;
-                        Snake.healthPercent = Snake.MAX_HEALTH;
+                        Snake.healthPercent = 10;// Snake.MAX_HEALTH;
                         Snake.cakeBatterCount = 0;
                         spawner_.chanceOfEnemy = ThingSpawner.INITIAL_CHANCE_OF_ENEMY;
                         resetYet = true;
@@ -240,6 +240,12 @@ namespace GGJ_Deceive
                         snake_.Update(gameTime, clientBounds);
                         spawner_.Update(gameTime);
 
+                        if (Snake.healthPercent <= 0)
+                        {
+                            gameState_ = State.GAME_OVER;
+                            displayGameGoal = false;
+                            freezeStart_ = gameSeconds;
+                        }
                         if (snake_.attached_.Count == 0)
                         {
                             gameState_ = prevState_;
@@ -267,6 +273,7 @@ namespace GGJ_Deceive
                     if (Keyboard.GetState().IsKeyDown(Keys.Y))
                     {
                         resetYet = false;
+                        spawner_.things_.Clear();
                         gameState_ = State.NORMAL_GAMEPLAY;
                     }
                     else if (Keyboard.GetState().IsKeyDown(Keys.N))

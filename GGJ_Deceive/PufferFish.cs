@@ -68,7 +68,7 @@ namespace GGJ_Deceive
                 // Set the velocity for the snake head
                 velocity_ = (Game1.snake.snakeBody_[0] - position_) / dist;
                 velocity_ *= (float) (MIN_VELOCITY + random_.NextDouble() * VELOCITY_RANGE * 0.1f);
-                velocity_.Y += .0025f;
+                //velocity_.Y += .0025f;
                 isPuffed_ = true;
                 puffrotScale = (float)River.random.NextDouble() + 0.5f;
             }
@@ -85,6 +85,7 @@ namespace GGJ_Deceive
             if (latched)
             {
                 velocity_ = new Vector3(0, 0, -1);
+                puffrotation = Matrix.Identity;
 
                 // Set the position as latched
                 position_ = Game1.snake.snakeBody_[latchIndex];
