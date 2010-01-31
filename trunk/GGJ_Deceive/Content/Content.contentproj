@@ -248,6 +248,22 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Overlay_Tip.png">
+      <Name>Overlay_Tip</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="screen_blood.png">
+      <Name>screen_blood</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="bubbles.wav">
       <Name>bubbles</Name>
       <Importer>WavImporter</Importer>
