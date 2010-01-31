@@ -117,19 +117,22 @@ namespace GGJ_Deceive
             SoundEffectInstance hiss = Game1.hissInstance;
             if ((attached_.Count > 0) && (healthPercent > 0))
             {
-                if (hiss.State != SoundState.Playing)
+                if (hiss.State == SoundState.Stopped)
                 {
-                    hiss.Volume = 0.1f;
                     hiss.IsLooped = true;
                     hiss.Play();
+                    hiss.Volume = 0.1f;
                 }
+                if (hiss.State == SoundState.Paused)
+                    hiss.Play();
             }
             if ((healthPercent <= 0) || (attached_.Count == 0))
             {
                 if (hiss.State == SoundState.Playing)
                 {
-                    hiss.Stop();
-                    Game1.deathInstance.Play();
+                    hiss.Pause();
+                    if (healthPercent < 0)
+                        Game1.deathInstance.Play();
                 }
             }
         }
