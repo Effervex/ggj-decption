@@ -69,6 +69,9 @@ namespace GGJ_Deceive
                 batch.Draw(beef_bar, new Vector2(530 + (beef_bar.Width * i), 555), null, new Color(red, green, 0), 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             }
 
+            if(gameState == State.NORMAL_GAMEPLAY)
+                death_blood = -500f;
+
             if (gameState != State.NOTHING)
                 WriteText(gameState);
 
@@ -151,7 +154,7 @@ namespace GGJ_Deceive
                     //"Shake furiously to dislodge attached puffer fish"
                     break;
                 case State.NORMAL_GAMEPLAY:
-                    death_blood = -500f;
+                    
                     //"Fill your belly with cake and grow beefy!"
                     MessageTip("Fill your belly with cake and grow\nbeefy!",
                         "5", new Vector2(105, 110));
