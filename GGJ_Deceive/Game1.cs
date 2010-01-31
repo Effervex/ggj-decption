@@ -46,6 +46,8 @@ namespace GGJ_Deceive
         public static SoundEffectInstance ambienceInstance;
         public static SoundEffect surgeSound;
         public static SoundEffectInstance surgeInstance;
+        public static SoundEffect beefinUpSound;
+        public static SoundEffectInstance beefinUpInstance;
 
         public static new GraphicsDevice GraphicsDevice
         {
@@ -109,6 +111,8 @@ namespace GGJ_Deceive
             ambienceInstance = ambience.CreateInstance();
             surgeSound = Content.Load<SoundEffect>("surge");
             surgeInstance = surgeSound.CreateInstance();
+            beefinUpSound = Content.Load<SoundEffect>("beefinUp");
+            beefinUpInstance = beefinUpSound.CreateInstance();
 
             ambienceInstance.IsLooped = true;
             ambienceInstance.Play();
