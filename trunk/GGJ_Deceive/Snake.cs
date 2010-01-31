@@ -143,6 +143,8 @@ namespace GGJ_Deceive
             {
                 beefLevel++;
                 cakeBatterCount -= Overlays.bowlCount;
+                Game1.beefinUpInstance.Volume = 0.5f;
+                Game1.beefinUpInstance.Play();
             }
         }
 

@@ -51,7 +51,7 @@ namespace GGJ_Deceive
             snake_ = Game1.snake;
             spawner_ = Game1.thingSpawner;
             overlays_ = Game1.overlay;
-            gameState_ = State.NORMAL_GAMEPLAY;//.NORMAL_GAMEPLAY;
+            gameState_ = State.TITLE;//.NORMAL_GAMEPLAY;
             alertBite = true;
         }
 
