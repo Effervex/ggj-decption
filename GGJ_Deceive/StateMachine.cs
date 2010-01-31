@@ -13,7 +13,7 @@ namespace GGJ_Deceive
     {
         public const float TITLE_STAY = 5;
         public const float TITLE_FADE = 0.05f;
-        public const int FREEZE_TIME = 3000;
+        public const int FREEZE_TIME = 5000;
         public const float FORWARD_NEXT = 5;
         public const float VERTICAL_NEXT = 5f;
 
@@ -51,7 +51,7 @@ namespace GGJ_Deceive
             snake_ = Game1.snake;
             spawner_ = Game1.thingSpawner;
             overlays_ = Game1.overlay;
-            gameState_ = State.GAME_OVER;
+            gameState_ = State.TITLE;//.NORMAL_GAMEPLAY;
             alertBite = true;
         }
 

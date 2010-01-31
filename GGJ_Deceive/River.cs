@@ -42,7 +42,7 @@ namespace GGJ_Deceive
                size = new Random().Next(12, 20);
                speed = (float)new Random().NextDouble() * 0.1f;
 
-               if (new Random().NextDouble() > 0.65f)
+               if (new Random().NextDouble() > 0.45f)
                    texture = 2 + new Random().Next() % 2;
                else
                 texture = new Random().Next() % 2;
@@ -125,7 +125,7 @@ namespace GGJ_Deceive
             Game1.GraphicsDevice.RenderState.AlphaTestEnable = true;
             Game1.GraphicsDevice.RenderState.AlphaFunction = CompareFunction.Greater;
 
-            Game1.GraphicsDevice.RenderState.ReferenceAlpha = 122;
+            Game1.GraphicsDevice.RenderState.ReferenceAlpha = 222;
             sceneEffect.Parameters["doFog"].SetValue(underwater);
             sceneEffect.CurrentTechnique = sceneEffect.Techniques["Technique3"];
 
@@ -159,10 +159,10 @@ namespace GGJ_Deceive
             indicies[5] = 3;
 
             vertices = new VertexPositionNormalTexture[4];
-            vertices[0] = new VertexPositionNormalTexture(new Vector3(-3, 0, 0), Vector3.Forward, new Vector2(0, 0));
-            vertices[1] = new VertexPositionNormalTexture(new Vector3(-3, 8, 0), Vector3.Forward, new Vector2(0, 1));
-            vertices[2] = new VertexPositionNormalTexture(new Vector3(3, 8, 0), Vector3.Forward, new Vector2(1, 1));
-            vertices[3] = new VertexPositionNormalTexture(new Vector3(3, 0, 0), Vector3.Forward, new Vector2(1, 0));
+            vertices[0] = new VertexPositionNormalTexture(new Vector3(-2, 0, 0), Vector3.Forward, new Vector2(0, 1));
+            vertices[1] = new VertexPositionNormalTexture(new Vector3(-2, 6, 0), Vector3.Forward, new Vector2(0, 0));
+            vertices[2] = new VertexPositionNormalTexture(new Vector3(2, 6, 0), Vector3.Forward, new Vector2(1, 0));
+            vertices[3] = new VertexPositionNormalTexture(new Vector3(2, 0, 0), Vector3.Forward, new Vector2(1, 1));
 
         }
     }
@@ -200,7 +200,7 @@ namespace GGJ_Deceive
         {
             float side_pos = (float)((random.NextDouble() > 0.5) ?
             random.NextDouble() + 3 : -random.NextDouble() - 3);
-            Vector3 t = new Vector3(side_pos, (float)(random.NextDouble() - 1.5) * 2f, -10);
+            Vector3 t = new Vector3(side_pos, (float)(random.NextDouble() - 1.0f) * 2f, -10);
             float s = (float)random.NextDouble() + .5f;
             return Matrix.CreateScale(new Vector3(s, s, s)) * Matrix.CreateTranslation(t);
         }
@@ -210,7 +210,7 @@ namespace GGJ_Deceive
         public void Update()
         {
             time -= 0.001f;
-            if(debries.Count < 40 && new Random().NextDouble() < 0.016)
+            if(debries.Count < 40 && new Random().NextDouble() < 0.026)
                 debries.Add(new Debry());
             RiverSpeed = Game1.snake.snakeVelocity_;
 
@@ -358,7 +358,7 @@ RiverOffset += RiverSpeed;
         }
         public float BottomSideBump(float pos)
         {
-            return 0.2f * ((float)Math.Cos((double)pos*2) + (float)Math.Sin((double)pos * .5));
+            return 0.35f * ((float)Math.Cos((double)pos*2) + (float)Math.Sin((double)pos * .5)) - .5f;
         }
         public Vector3 getNormal(Vector3 pos)
         {
@@ -455,8 +455,8 @@ RiverOffset += RiverSpeed;
 
             for (int i = 0; i < tree_count; i++)
             {
-                Matrix t = Matrix.CreateTranslation(new Vector3((float)(random.Next() - 0.5f * 3.0f), 
-                    0, 10 - i));
+                Matrix t = NextTreeStart();
+                t.Translation = new Vector3(t.Translation.X,t.Translation.Y, 10-((float)i / (float)tree_count) * 20);
                 treeInstances.Add(t);
             }
 
@@ -488,10 +488,10 @@ RiverOffset += RiverSpeed;
             float water_depth = -0.2f;
             
             water_vertices = new VertexPositionNormalTexture[4];
-            water_vertices[0] = new VertexPositionNormalTexture(new Vector3(-3, water_depth, -segments), Vector3.Up, new Vector2(0, 0));
-            water_vertices[1] = new VertexPositionNormalTexture(new Vector3(-3, water_depth, segments), Vector3.Up, new Vector2(0, segments));
-            water_vertices[2] = new VertexPositionNormalTexture(new Vector3(3, water_depth, segments), Vector3.Up, new Vector2(1, segments));
-            water_vertices[3] = new VertexPositionNormalTexture(new Vector3(3, water_depth, -segments), Vector3.Up, new Vector2(1, 0));
+            water_vertices[0] = new VertexPositionNormalTexture(new Vector3(-4, water_depth, -segments), Vector3.Up, new Vector2(0, 0));
+            water_vertices[1] = new VertexPositionNormalTexture(new Vector3(-4, water_depth, segments), Vector3.Up, new Vector2(0, segments));
+            water_vertices[2] = new VertexPositionNormalTexture(new Vector3(4, water_depth, segments), Vector3.Up, new Vector2(1, segments));
+            water_vertices[3] = new VertexPositionNormalTexture(new Vector3(4, water_depth, -segments), Vector3.Up, new Vector2(1, 0));
 
             background_indicies = new short[6];
             background_indicies[0] = 0;

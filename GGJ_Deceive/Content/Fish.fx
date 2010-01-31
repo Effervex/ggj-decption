@@ -98,7 +98,7 @@ VertexShaderOutput PuffVertexShaderFunction(VertexShaderInput input)
 
 float3 t = input.Normal;
 
-float inflated = log( max(puffAmount ,1 )) * 5 ;
+float inflated = log( max(puffAmount ,1 )) * 8 ;
 
 
 
