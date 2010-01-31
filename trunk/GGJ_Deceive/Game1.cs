@@ -36,8 +36,8 @@ namespace GGJ_Deceive
 
         public static SoundEffect chompSound;
         public static SoundEffectInstance chompInstance;
-        public static SoundEffect hissSound;
-        public static SoundEffectInstance hissInstance;
+        public static SoundEffect munchSound;
+        public static SoundEffectInstance munchInstance;
         public static SoundEffect bubblesSound;
         public static SoundEffectInstance bubblesInstance;
         public static SoundEffect deathSound;
@@ -99,8 +99,8 @@ namespace GGJ_Deceive
         {
             chompSound = Content.Load<SoundEffect>("chomp");
             chompInstance = chompSound.CreateInstance();
-            hissSound = Content.Load<SoundEffect>("hiss");
-            hissInstance = hissSound.CreateInstance();
+            munchSound = Content.Load<SoundEffect>("munch");
+            munchInstance = munchSound.CreateInstance();
             bubblesSound = Content.Load<SoundEffect>("bubbles");
             bubblesInstance = bubblesSound.CreateInstance();
             deathSound = Content.Load<SoundEffect>("rattlesnakerattle");

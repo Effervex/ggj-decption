@@ -114,14 +114,14 @@ namespace GGJ_Deceive
 
         private void playSound()
         {
-            SoundEffectInstance hiss = Game1.hissInstance;
+            SoundEffectInstance hiss = Game1.munchInstance;
             if ((attached_.Count > 0) && (healthPercent > 0))
             {
                 if (hiss.State == SoundState.Stopped)
                 {
                     hiss.IsLooped = true;
                     hiss.Play();
-                    hiss.Volume = 0.1f;
+                    hiss.Volume = 0.2f;
                 }
                 if (hiss.State == SoundState.Paused)
                     hiss.Play();
