@@ -51,7 +51,7 @@ namespace GGJ_Deceive
             snake_ = Game1.snake;
             spawner_ = Game1.thingSpawner;
             overlays_ = Game1.overlay;
-            gameState_ = State.NORMAL_GAMEPLAY;
+            gameState_ = State.GAME_OVER;
             alertBite = true;
         }
 
@@ -212,7 +212,7 @@ namespace GGJ_Deceive
                         spawner_.spawnFish = true;
                         spawner_.spawnPufferFish = true;
                         Snake.beefLevel = 1;
-                        Snake.healthPercent = 10;// Snake.MAX_HEALTH;
+                        Snake.healthPercent = Snake.MAX_HEALTH;
                         Snake.cakeBatterCount = 0;
                         spawner_.chanceOfEnemy = ThingSpawner.INITIAL_CHANCE_OF_ENEMY;
                         resetYet = true;
