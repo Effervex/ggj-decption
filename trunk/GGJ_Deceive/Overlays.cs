@@ -105,6 +105,7 @@ namespace GGJ_Deceive
             float alpa = ( 500f + death_blood) * 0.25f;
             batch.DrawString(font, "Natural selection selected you.", new Vector2(200, 84), new Color(245, 245, 255, (byte)alpa), .012f, Vector2.Zero, 2.15f, SpriteEffects.None, 0f);
             batch.DrawString(font, "You . Are . Dead", new Vector2(290, 140 + alpa * 0.1f), new Color(190, 0,0, (byte)alpa), .012f, Vector2.Zero, 2.15f, SpriteEffects.None, 0f);
+            batch.DrawString(font, "Beefiness: " + Snake.beefLevel, new Vector2(350, 200 + alpa * 0.1f), new Color(190, 0, 0, (byte)alpa), .012f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
 
         }
         string lastMessage = "";
@@ -164,7 +165,7 @@ namespace GGJ_Deceive
                     //"Try again (Y/N)?"
                     DeathScreen();
                     MessageTip("   Try again?\n   Y: Yes\n   N: No",
-                        "Retry!", new Vector2(120, 220));
+                        "Retry!", new Vector2(120, 320));
                     break;
                 case State.FISH_BITE:
                     //"Oh no! A fish has you! Shake vigourously to flick it off"
