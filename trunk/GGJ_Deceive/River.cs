@@ -110,18 +110,44 @@ namespace GGJ_Deceive
 
     public class Tree
     {
-        Texture2D texture_a;
-        Texture2D texture_b;
-        Texture2D texture_c;
+        static Texture2D texture_a;
+        static Texture2D texture_b;
+        static Texture2D texture_c;
+        static Texture2D seaweed_a;
+        static Texture2D seaweed_b;
         VertexPositionNormalTexture[] vertices = null;
         short[] indicies = null;
 
 
         public void Draw(Effect sceneEffect, Matrix transform, int texture, bool underwater)
         {
-            sceneEffect.Parameters["TreeTexture"].SetValue(texture == 0 ? texture_a : texture == 1 ? texture_b : texture_c);
-            sceneEffect.Parameters["World"].SetValue(transform);
 
+            sceneEffect.Parameters["TreeTexture"].SetValue(texture == 0 ? texture_a : 
+                                                            texture == 1 ? texture_b : 
+                                                            texture == 2 ? texture_c :
+                                                            texture == 3 ? seaweed_a :
+                                                            seaweed_b);
+
+            if (texture == 3 || texture == 4)
+            {
+
+                float wave = (float)Math.Sin(transform.Translation.Z * 1f + River.time * 20f) + 0.5f;
+                wave *= 0.5f;
+                vertices[1] = new VertexPositionNormalTexture(new Vector3(-2 + wave, wave + 6, wave + 0), Vector3.Forward, new Vector2(0, 0));
+                vertices[2] = new VertexPositionNormalTexture(new Vector3(2 + wave, wave + 6, wave + 0), Vector3.Forward, new Vector2(1, 0));
+
+                Matrix tem = Matrix.CreateScale(0.25f)*transform;
+                tem.Translation = new Vector3(tem.Translation.X * 0.4f, 0.1f*tem.Translation.Y - 3f, tem.Translation.Z);
+                sceneEffect.Parameters["World"].SetValue(tem);
+                //(transform);
+            }
+            else {
+                vertices[1] = new VertexPositionNormalTexture(new Vector3(-2, 6, 0), Vector3.Forward, new Vector2(0, 0));
+                vertices[2] = new VertexPositionNormalTexture(new Vector3(2, 6, 0), Vector3.Forward, new Vector2(1, 0));
+
+                sceneEffect.Parameters["World"].SetValue(transform);
+
+            }
             Game1.GraphicsDevice.RenderState.AlphaTestEnable = true;
             Game1.GraphicsDevice.RenderState.AlphaFunction = CompareFunction.Greater;
 
@@ -146,9 +172,16 @@ namespace GGJ_Deceive
 
         public void Create()
         {
-            texture_a = Game1.GetInstance.Content.Load<Texture2D>("Tree1");
-            texture_b = Game1.GetInstance.Content.Load<Texture2D>("Tree2");
-            texture_c = Game1.GetInstance.Content.Load<Texture2D>("Tree3");
+            if (Tree.texture_a == null) 
+                Tree.texture_a = Game1.GetInstance.Content.Load<Texture2D>("Tree1");
+            if (Tree.texture_b == null)
+                Tree.texture_b = Game1.GetInstance.Content.Load<Texture2D>("Tree2");
+            if (Tree.texture_c == null)
+                Tree.texture_c = Game1.GetInstance.Content.Load<Texture2D>("Tree3");
+            if (Tree.seaweed_a == null)
+                Tree.seaweed_a = Game1.GetInstance.Content.Load<Texture2D>("Seaweed1");
+            if (Tree.seaweed_b == null)
+                Tree.seaweed_b = Game1.GetInstance.Content.Load<Texture2D>("Seaweed2");
  
             indicies = new short[6];
             indicies[0] = 0;

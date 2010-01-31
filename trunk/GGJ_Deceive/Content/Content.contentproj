@@ -292,6 +292,22 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Seaweed1.png">
+      <Name>Seaweed1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Seaweed2.png">
+      <Name>Seaweed2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="munch.wav">
       <Name>munch</Name>
       <Importer>WavImporter</Importer>

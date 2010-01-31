@@ -89,6 +89,7 @@ namespace GGJ_Deceive
         {
          //   Game1.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
             stateMachine.Initialise();
+            Window.Title = "Swimming Snake";
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             base.Initialize();
         }

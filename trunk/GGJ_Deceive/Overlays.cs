@@ -69,7 +69,7 @@ namespace GGJ_Deceive
                 batch.Draw(beef_bar, new Vector2(530 + (beef_bar.Width * i), 555), null, new Color(red, green, 0), 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             }
 
-            if(gameState == State.NORMAL_GAMEPLAY)
+            if(gameState == State.NOTHING)
                 death_blood = -500f;
 
             if (gameState != State.NOTHING)
@@ -103,7 +103,8 @@ namespace GGJ_Deceive
                 new Color(25, 25, 225, 200), 0, Vector2.Zero, 2f, SpriteEffects.FlipHorizontally, 0.8f);
 
             float alpa = ( 500f + death_blood) * 0.25f;
-            batch.DrawString(font, "YOU ARE DEAD", new Vector2(300, 64), new Color(255,255,255,(byte)alpa), .012f, Vector2.Zero, 2.15f, SpriteEffects.None, 0f);
+            batch.DrawString(font, "Natural selection selected you.", new Vector2(200, 84), new Color(245, 245, 255, (byte)alpa), .012f, Vector2.Zero, 2.15f, SpriteEffects.None, 0f);
+            batch.DrawString(font, "You . Are . Dead", new Vector2(290, 140 + alpa * 0.1f), new Color(190, 0,0, (byte)alpa), .012f, Vector2.Zero, 2.15f, SpriteEffects.None, 0f);
 
         }
         string lastMessage = "";
@@ -163,7 +164,7 @@ namespace GGJ_Deceive
                     //"Try again (Y/N)?"
                     DeathScreen();
                     MessageTip("   Try again?\n   Y: Yes\n   N: No",
-                        "Retry!", new Vector2(120, 170));
+                        "Retry!", new Vector2(120, 220));
                     break;
                 case State.FISH_BITE:
                     //"Oh no! A fish has you! Shake vigourously to flick it off"
