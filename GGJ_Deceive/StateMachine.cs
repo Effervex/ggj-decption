@@ -275,6 +275,7 @@ namespace GGJ_Deceive
                         resetYet = false;
                         spawner_.things_.Clear();
                         gameState_ = State.NORMAL_GAMEPLAY;
+                        displayTryAgain = false;
                     }
                     else if (Keyboard.GetState().IsKeyDown(Keys.N))
                     {
