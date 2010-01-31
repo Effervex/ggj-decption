@@ -258,6 +258,7 @@ namespace GGJ_Deceive
                         displayGameOver = true;
                     else
                     {
+                        displayTryAgain = true;
                         gameState_ = State.TRY_AGAIN;
                         displayGameOver = false;
                     }
