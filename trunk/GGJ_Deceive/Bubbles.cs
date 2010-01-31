@@ -30,10 +30,11 @@ namespace GGJ_Deceive
 
         static public void AddBubbles(Vector3 position, int count)
         {
-
+            Game1.bubblesInstance.Volume = 0.1f;
+            Game1.bubblesInstance.Play();
             for (int i = 0; i < count; i++)
             {
-
+                
                 particles.Add(new VertexPositionNormalTexture(position + random * 0.1f,
                     random,
                     new Vector2((float)River.random.NextDouble() * 0.7f, 1.61f * (float)River.random.NextDouble() + .1f)));

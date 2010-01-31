@@ -174,7 +174,7 @@ namespace GGJ_Deceive
         public const float BOTTOM = -2.5f;
         public const float BOTTOM_WIDTH = 3;
         public const float TOP_WIDTH = 6;
-        public const float BOUNDARY_BUFFER = 0.1f;
+        public const float BOUNDARY_BUFFER = 0.2f;
         public static float RiverSpeed = 0.05f;
         public static float RiverOffset = 0f;
         public static Random random = new Random();

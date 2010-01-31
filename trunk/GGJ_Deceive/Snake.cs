@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Audio;
 
 namespace GGJ_Deceive
 {
@@ -106,8 +107,31 @@ namespace GGJ_Deceive
             moveBody(gameTime, windowSize);
             updateVertices();
             checkCakes();
+            playSound();
 
             prevState_ = Mouse.GetState();
+        }
+
+        private void playSound()
+        {
+            SoundEffectInstance hiss = Game1.hissInstance;
+            if ((attached_.Count > 0) && (healthPercent > 0))
+            {
+                if (hiss.State != SoundState.Playing)
+                {
+                    hiss.Volume = 0.1f;
+                    hiss.IsLooped = true;
+                    hiss.Play();
+                }
+            }
+            if ((healthPercent <= 0) || (attached_.Count == 0))
+            {
+                if (hiss.State == SoundState.Playing)
+                {
+                    hiss.Stop();
+                    Game1.deathInstance.Play();
+                }
+            }
         }
 
         private void checkCakes()
@@ -197,6 +221,11 @@ namespace GGJ_Deceive
             // Move the head towards the mouse
             float relativeX = (float) (2.0 * Mouse.GetState().X / windowSize.Width - 1);
             float relativeY = (float) (2.0 * Mouse.GetState().Y / windowSize.Height - 1) * -1f;
+
+            if (relativeX > 0.75)
+            {
+                Game1.surgeInstance.Play();
+            }
 
             relativeX = Math.Max(relativeX, -1);
             relativeX = Math.Min(relativeX, 1);

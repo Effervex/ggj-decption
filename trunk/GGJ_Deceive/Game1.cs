@@ -34,9 +34,18 @@ namespace GGJ_Deceive
         public static Overlays overlay;
         public static VertexDeclaration vd;
 
-        static SoundEffect soundEngine;
-        static SoundEffectInstance soundEngineInstance;
-        static SoundEffect soundHyperspaceActivation;
+        public static SoundEffect chompSound;
+        public static SoundEffectInstance chompInstance;
+        public static SoundEffect hissSound;
+        public static SoundEffectInstance hissInstance;
+        public static SoundEffect bubblesSound;
+        public static SoundEffectInstance bubblesInstance;
+        public static SoundEffect deathSound;
+        public static SoundEffectInstance deathInstance;
+        public static SoundEffect ambience;
+        public static SoundEffectInstance ambienceInstance;
+        public static SoundEffect surgeSound;
+        public static SoundEffectInstance surgeInstance;
 
         public static new GraphicsDevice GraphicsDevice
         {
@@ -77,7 +86,6 @@ namespace GGJ_Deceive
         protected override void Initialize()
         {
          //   Game1.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
-            
             stateMachine.Initialise();
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             base.Initialize();
@@ -89,9 +97,21 @@ namespace GGJ_Deceive
         /// </summary>
         protected override void LoadContent()
         {
-            soundEngine = Content.Load<SoundEffect>("chomp");
-            soundEngineInstance = soundEngine.CreateInstance();
-    
+            chompSound = Content.Load<SoundEffect>("chomp");
+            chompInstance = chompSound.CreateInstance();
+            hissSound = Content.Load<SoundEffect>("hiss");
+            hissInstance = hissSound.CreateInstance();
+            bubblesSound = Content.Load<SoundEffect>("bubbles");
+            bubblesInstance = bubblesSound.CreateInstance();
+            deathSound = Content.Load<SoundEffect>("rattlesnakerattle");
+            deathInstance = deathSound.CreateInstance();
+            ambience = Content.Load<SoundEffect>("ambient");
+            ambienceInstance = ambience.CreateInstance();
+            surgeSound = Content.Load<SoundEffect>("surge");
+            surgeInstance = surgeSound.CreateInstance();
+
+            ambienceInstance.IsLooped = true;
+            ambienceInstance.Play();
 
             // Create a new SpriteBatch, which can be used to draw textures.
             
@@ -129,8 +149,7 @@ namespace GGJ_Deceive
         protected override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
-            soundEngineInstance.Volume = 1f;
-            soundEngineInstance.Play();
+            
             // Keep mouse in bounds
             BoundMouse();
 
